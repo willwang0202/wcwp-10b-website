@@ -444,7 +444,7 @@
             '<div class="container results-container">' +
             '<div class="confirmation-header">' +
             '<div class="confirmation-badge" id="confirmation-badge">\u2713</div>' +
-            '<h2 id="confirmation-title" class="confirmation-title">Booking Confirmed</h2>' +
+            '<h2 id="confirmation-title" class="confirmation-title">Show Ended</h2>' +
             '<p id="confirmation-subtitle" class="confirmation-subtitle"></p>' +
             '</div>' +
             '<div class="results-grid">' +
@@ -699,7 +699,7 @@
         chartEl.innerHTML = html;
     }
 
-    // -------- TIMELINE --------
+    // -------- TIMELINE (Calendar Block View) --------
     function renderTimeline() {
         var tier = state.tier;
         var activities = [];
@@ -746,30 +746,94 @@
                 { time: "5:30 PM", text: "Arrive. Crew has everything set up already.", icon: "🏟️" },
                 { time: "6:00 PM", text: "Quick soundcheck. Your engineer handles the rest.", icon: "🎛️" },
                 { time: "7:00 PM", text: "Green room. Catered dinner with the band.", icon: "🍽️" },
-                { time: "8:30 PM", text: "Quick meet‑and‑greet. Photos handled.", icon: "📸" },
-                { time: "9:00 PM", text: "The show. Full production — lights, sound, visuals.", icon: "✨" },
+                { time: "8:30 PM", text: "Quick meet\u2011and\u2011greet. Photos handled.", icon: "📸" },
+                { time: "9:00 PM", text: "The show. Full production \u2014 lights, sound, visuals.", icon: "✨" },
                 { time: "10:30 PM", text: "Set ends. Your crew breaks everything down.", icon: "📦" },
                 { time: "11:00 PM", text: "Driver takes you home. You post a story on the ride.", icon: "🏠" }
             ];
         }
 
-        var timelineEl = $("#results-timeline");
-        var html = '<h3>A Day in Your Life</h3>' +
-            '<p class="timeline-intro">Here\'s what show day looked like as a <strong>' + TIERS[tier].label + '</strong>:</p>' +
-            '<div class="timeline">';
+        // Parse "H:MM AM/PM" into minutes from midnight
+        function toMins(timeStr) {
+            var m = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+            if (!m) return 0;
+            var h = parseInt(m[1]), min = parseInt(m[2]);
+            var pm = m[3].toUpperCase() === "PM";
+            if (pm && h !== 12) h += 12;
+            if (!pm && h === 12) h = 0;
+            return h * 60 + min;
+        }
 
+        var actMins = activities.map(function (a) { return toMins(a.time); });
+        // Handle next-day wrap-around (e.g. 12:30 AM after 11:30 PM)
+        for (var idx = 1; idx < actMins.length; idx++) {
+            if (actMins[idx] <= actMins[idx - 1]) actMins[idx] += 1440;
+        }
+
+        var firstMin = actMins[0];
+        var lastMin = actMins[actMins.length - 1] + 40;
+        var PX_PER_HR = 56;
+        var firstHour = Math.floor(firstMin / 60);
+        var lastHour = Math.ceil(lastMin / 60);
+        var totalH = (lastHour - firstHour) * PX_PER_HR;
+
+        function fmtHour(h) {
+            var d = h % 24;
+            if (d === 0) return "12 AM";
+            if (d < 12) return d + " AM";
+            if (d === 12) return "12 PM";
+            return (d - 12) + " PM";
+        }
+
+        function blockClass(icon) {
+            if (["🎸", "🎤", "✨"].indexOf(icon) !== -1) return "cal-block--perf";
+            if (icon === "💼") return "cal-block--work";
+            if (["⏰", "😴", "🌙", "🏠", "🍽️", "🥂"].indexOf(icon) !== -1) return "cal-block--rest";
+            return "cal-block--prep";
+        }
+
+        // Build hour label column
+        var hoursHTML = "";
+        for (var hh = firstHour; hh <= lastHour; hh++) {
+            hoursHTML += '<div class="cal-hour-row" style="top:' + ((hh - firstHour) * PX_PER_HR) + 'px">' +
+                '<span class="cal-hour-label">' + fmtHour(hh) + '</span></div>';
+        }
+
+        // Build gridlines + event blocks for events column
+        var eventsHTML = "";
+        for (var gg = firstHour; gg <= lastHour; gg++) {
+            eventsHTML += '<div class="cal-gridline" style="top:' + ((gg - firstHour) * PX_PER_HR) + 'px"></div>';
+        }
         activities.forEach(function (a, i) {
-            html += '<div class="timeline-item fade-in-up delay-' + Math.min(i % 5 + 1, 5) + '">' +
-                '<div class="timeline-dot"></div>' +
-                '<div class="timeline-marker"><span class="timeline-icon">' + a.icon + '</span></div>' +
-                '<div class="timeline-content">' +
-                '<span class="timeline-time">' + a.time + '</span>' +
-                '<p class="timeline-text">' + a.text + '</p>' +
-                '</div></div>';
+            var startM = actMins[i];
+            var endM = (i < actMins.length - 1) ? actMins[i + 1] : startM + 40;
+            var durMins = endM - startM;
+            var topPx = (startM - firstMin) / 60 * PX_PER_HR;
+            var heightPx = Math.max(32, durMins / 60 * PX_PER_HR);
+            eventsHTML +=
+                '<div class="cal-block ' + blockClass(a.icon) + '" style="top:' + topPx.toFixed(0) + 'px; height:' + heightPx.toFixed(0) + 'px">' +
+                '<div class="cal-block-header">' +
+                '<span class="cal-block-time">' + a.time + '</span>' +
+                '<span class="cal-block-icon">' + a.icon + '</span>' +
+                '</div>' +
+                '<p class="cal-block-text">' + a.text + '</p>' +
+                '</div>';
         });
 
-        html += '</div>';
-        timelineEl.innerHTML = html;
+        var timelineEl = $("#results-timeline");
+        timelineEl.innerHTML =
+            '<h3>A Day in Your Life</h3>' +
+            '<p class="timeline-intro">Show day as a <strong>' + TIERS[tier].label + '</strong>. Block height = time spent on each activity.</p>' +
+            '<div class="cal-legend">' +
+            '<div class="cal-legend-item"><span class="cal-legend-dot cal-block--perf"></span>Performance</div>' +
+            '<div class="cal-legend-item"><span class="cal-legend-dot cal-block--work"></span>Day Job</div>' +
+            '<div class="cal-legend-item"><span class="cal-legend-dot cal-block--prep"></span>Hustle / Setup</div>' +
+            '<div class="cal-legend-item"><span class="cal-legend-dot cal-block--rest"></span>Rest / Meals</div>' +
+            '</div>' +
+            '<div class="cal-wrapper">' +
+            '<div class="cal-time-col" style="height:' + totalH + 'px">' + hoursHTML + '</div>' +
+            '<div class="cal-events-col" style="height:' + totalH + 'px">' + eventsHTML + '</div>' +
+            '</div>';
     }
 
     // -------- CONFETTI --------
@@ -836,11 +900,11 @@
         if (overBudget) {
             badge.textContent = "!";
             badge.className = "confirmation-badge over-budget";
-            $("#confirmation-title").textContent = "Over Budget!";
+            $("#confirmation-title").textContent = "Show Ended";
         } else {
             badge.textContent = "✓";
             badge.className = "confirmation-badge";
-            $("#confirmation-title").textContent = "Booking Confirmed";
+            $("#confirmation-title").textContent = "Show Ended";
         }
 
         var subText;
