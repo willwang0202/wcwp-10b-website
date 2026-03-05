@@ -850,23 +850,30 @@
 
     // -------- SHARE --------
     function shareResults(spent, remaining, avgHours) {
+        // 1. Log to console to see if the function is even firing
+        console.log("Share function triggered");
+    
         var tierLabel = TIERS[state.tier].label;
-        var shareText = "🎸 I put on a show as a " + tierLabel + "!\n" +
-            "💰 Budget: $" + state.budget.toLocaleString() + "\n" +
-            "💸 Spent: $" + spent.toLocaleString() + "\n" +
-            "⏱ Time: ~" + avgHours + " hours\n" +
-            "👏 Crowd Reaction: " + state.audienceScore + "/100\n\n" +
-            "Think you could do better? Try StageFinder!";
-
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(shareText).then(function () {
-                var btn = $("#btn-share");
-                btn.textContent = "Copied! 📋";
-                btn.classList.add("copied");
-                setTimeout(function () { btn.textContent = "Share Results 📤"; btn.classList.remove("copied"); }, 2500);
-            });
+        var overBudget = spent > state.budget;
+        var audienceEmoji = state.audienceScore >= 85 ? "🤯" : state.audienceScore >= 70 ? "🔥" : "😐";
+        var siteUrl = "https://willwang0202.github.io/wcwp-10b-website/";
+    
+        var shareData = {
+            title: "StageFinder — I just put on a show!",
+            text: "🎸 I booked a show as a " + tierLabel + " on StageFinder!\n" +
+                  "💰 Budget: $" + spent.toLocaleString() + "\n" +
+                  audienceEmoji + " Reaction: " + state.audienceScore + "/100",
+            url: siteUrl
+        };
+    
+        // 2. Check if the browser actually supports it in this context
+        if (navigator.canShare && navigator.canShare(shareData)) {
+            navigator.share(shareData)
+                .then(() => console.log('Share successful'))
+                .catch((error) => console.log('Share failed/cancelled:', error));
         } else {
-            window.prompt("Copy to share:", shareText);
+            // 3. Fallback logic for Desktop/Older Browsers
+            handleFallback(shareData.text + "\n" + siteUrl);
         }
     }
 
