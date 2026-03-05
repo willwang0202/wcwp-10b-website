@@ -7,9 +7,8 @@
         {
             "type": "chrome",
             "request": "launch",
-            "name": "Launch Chrome against localhost",
-            "url": "http://localhost:3000",
-            "webRoot": "${workspaceFolder}"
+            "name": "Open index.html",
+            "file": "/Users/edu/Documents/Code/WCWP 10B Website/index.html"
         }
     ]
 }

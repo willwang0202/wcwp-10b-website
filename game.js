@@ -705,51 +705,45 @@
         var activities = [];
 
         if (tier === "working") {
+            // All slots 1 hr+ so every block is readable
             activities = [
-                { time: "6:00 AM", text: "Alarm goes off. Day job in 30 minutes.", icon: "⏰" },
-                { time: "7:00 AM", text: "Clock in at work. 8 hours to go.", icon: "💼" },
-                { time: "3:30 PM", text: "Rush out. Pick up gear from storage across town.", icon: "🏃" },
+                { time: "6:00 AM",  text: "Alarm. Day job starts in 30 min.",        icon: "⏰" },
+                { time: "7:00 AM",  text: "Clock in at work. 8 hours ahead.",         icon: "💼" },
+                { time: "3:30 PM",  text: "Rush out. Grab gear from storage.",        icon: "🏃" },
+                { time: "5:00 PM",  text: "Load gear into borrowed car. Two trips.",  icon: "🚗" },
+                { time: "6:00 PM",  text: "Arrive at venue. Haul everything inside.", icon: "🏟️" },
+                { time: "7:00 PM",  text: "Soundcheck — you're your own engineer.",   icon: "🎛️" },
+                { time: "8:30 PM",  text: "Doors open. Selling merch until showtime.",icon: "👕" },
+                { time: "9:30 PM",  text: "45 min of pure energy on stage.",          icon: "🎸" },
+                { time: "10:30 PM", text: "Load out alone. Drive gear back.",         icon: "📦" },
+                { time: "12:00 AM", text: "Collapse into bed. Up again in 6 hours.",  icon: "😴" }
             ];
-            if (state.selections.promo && state.selections.promo.level === "low") {
-                activities.push({ time: "4:15 PM", text: "Staple flyers to every telephone pole on the way.", icon: "📋" });
-            }
-            activities.push(
-                { time: "5:00 PM", text: "Load gear into a borrowed car. Two trips.", icon: "🚗" },
-                { time: "6:00 PM", text: "Arrive at venue. Haul everything inside yourself.", icon: "🏟️" },
-                { time: "7:00 PM", text: "Soundcheck. You're also the sound engineer tonight.", icon: "🎛️" },
-                { time: "8:30 PM", text: "Doors open. You're selling merch until showtime.", icon: "👕" },
-                { time: "9:30 PM", text: "You play your heart out. 45 minutes of pure energy.", icon: "🎸" },
-                { time: "10:30 PM", text: "Load out. Break down everything. Alone.", icon: "📦" },
-                { time: "11:30 PM", text: "Drive gear back to storage. Grab gas station food.", icon: "🌙" },
-                { time: "12:30 AM", text: "Collapse into bed. Work starts again in 6 hours.", icon: "😴" }
-            );
         } else if (tier === "successful") {
             activities = [
-                { time: "10:00 AM", text: "Wake up. Check socials — the ad campaign is running.", icon: "📱" },
-                { time: "11:30 AM", text: "Call with the sound tech about tonight's setup.", icon: "🎛️" },
-                { time: "1:00 PM", text: "Quick rehearsal at the practice space.", icon: "🎸" },
-                { time: "3:00 PM", text: "Gear transport handled by the van service.", icon: "🚐" },
-                { time: "4:30 PM", text: "Arrive at venue. Sound tech starts setting up.", icon: "🏟️" },
-                { time: "5:30 PM", text: "Soundcheck. You focus only on your performance.", icon: "🎤" },
-                { time: "7:00 PM", text: "Dinner break. Actually eat a real meal.", icon: "🍽️" },
-                { time: "8:30 PM", text: "Doors open. A friend handles merch.", icon: "👕" },
-                { time: "9:30 PM", text: "Full set. 60 minutes of earned stage time.", icon: "🎸" },
-                { time: "11:00 PM", text: "Load out with the band. Quick and practiced.", icon: "📦" },
-                { time: "12:00 AM", text: "Home by midnight. Not bad.", icon: "🏠" }
+                { time: "10:00 AM", text: "Wake up. Check the ad campaign stats.",       icon: "📱" },
+                { time: "11:30 AM", text: "Call with sound tech about tonight.",         icon: "🎛️" },
+                { time: "1:00 PM",  text: "Quick rehearsal at the practice space.",      icon: "🎸" },
+                { time: "3:00 PM",  text: "Van service handles gear transport.",         icon: "🚐" },
+                { time: "4:30 PM",  text: "Arrive. Sound tech starts setting up.",      icon: "🏟️" },
+                { time: "5:30 PM",  text: "Soundcheck. You focus on performance only.", icon: "🎤" },
+                { time: "7:00 PM",  text: "Dinner break. Actually eat a real meal.",    icon: "🍽️" },
+                { time: "8:30 PM",  text: "Doors open. A friend handles merch.",        icon: "👕" },
+                { time: "9:30 PM",  text: "Full set. 60 min of earned stage time.",     icon: "🎸" },
+                { time: "11:00 PM", text: "Load out with the band. Quick and clean.",   icon: "📦" },
+                { time: "12:00 AM", text: "Home by midnight. Not bad at all.",          icon: "🏠" }
             ];
         } else {
+            // Trust fund: consolidated to 1 hr+ slots — no more 30-min gaps
             activities = [
-                { time: "12:00 PM", text: "Wake up naturally. Check in with your manager.", icon: "📱" },
-                { time: "1:00 PM", text: "Brunch. PR team sent over the talking points.", icon: "🥂" },
-                { time: "3:00 PM", text: "Quick press interview via video call from the couch.", icon: "📰" },
-                { time: "5:00 PM", text: "Driver takes you to the venue.", icon: "🚘" },
-                { time: "5:30 PM", text: "Arrive. Crew has everything set up already.", icon: "🏟️" },
-                { time: "6:00 PM", text: "Quick soundcheck. Your engineer handles the rest.", icon: "🎛️" },
-                { time: "7:00 PM", text: "Green room. Catered dinner with the band.", icon: "🍽️" },
-                { time: "8:30 PM", text: "Quick meet\u2011and\u2011greet. Photos handled.", icon: "📸" },
-                { time: "9:00 PM", text: "The show. Full production \u2014 lights, sound, visuals.", icon: "✨" },
-                { time: "10:30 PM", text: "Set ends. Your crew breaks everything down.", icon: "📦" },
-                { time: "11:00 PM", text: "Driver takes you home. You post a story on the ride.", icon: "🏠" }
+                { time: "12:00 PM", text: "Wake up naturally. Check in with manager.", icon: "📱" },
+                { time: "1:00 PM",  text: "Brunch. PR team briefs you on tonight.",    icon: "🥂" },
+                { time: "3:00 PM",  text: "Quick press interview via video call.",     icon: "📰" },
+                { time: "5:00 PM",  text: "Driver takes you to the venue.",            icon: "🚘" },
+                { time: "6:30 PM",  text: "Arrive. Crew has everything set up.",       icon: "🏟️" },
+                { time: "7:30 PM",  text: "Green room. Catered dinner with the band.", icon: "🍽️" },
+                { time: "9:00 PM",  text: "The show. Full production — lights, visuals.", icon: "✨" },
+                { time: "10:30 PM", text: "Set ends. Crew handles full breakdown.",    icon: "📦" },
+                { time: "11:30 PM", text: "Driver home. You post a story on the way.", icon: "🏠" }
             ];
         }
 
@@ -765,13 +759,13 @@
         }
 
         var actMins = activities.map(function (a) { return toMins(a.time); });
-        // Handle next-day wrap-around (e.g. 12:30 AM after 11:30 PM)
+        // Handle next-day wrap-around (e.g. 12:00 AM after 11:30 PM)
         for (var idx = 1; idx < actMins.length; idx++) {
             if (actMins[idx] <= actMins[idx - 1]) actMins[idx] += 1440;
         }
 
         var firstMin = actMins[0];
-        var lastMin = actMins[actMins.length - 1] + 40;
+        var lastMin = actMins[actMins.length - 1] + 60; // 1-hr buffer for last block
         var PX_PER_HR = 56;
         var firstHour = Math.floor(firstMin / 60);
         var lastHour = Math.ceil(lastMin / 60);
@@ -799,24 +793,23 @@
                 '<span class="cal-hour-label">' + fmtHour(hh) + '</span></div>';
         }
 
-        // Build gridlines + event blocks for events column
+        // Build gridlines + event blocks — each block is exactly as tall as its duration
         var eventsHTML = "";
         for (var gg = firstHour; gg <= lastHour; gg++) {
             eventsHTML += '<div class="cal-gridline" style="top:' + ((gg - firstHour) * PX_PER_HR) + 'px"></div>';
         }
         activities.forEach(function (a, i) {
             var startM = actMins[i];
-            var endM = (i < actMins.length - 1) ? actMins[i + 1] : startM + 40;
-            var durMins = endM - startM;
+            var endM = (i < actMins.length - 1) ? actMins[i + 1] : startM + 60;
+            var heightPx = (endM - startM) / 60 * PX_PER_HR;
             var topPx = (startM - firstMin) / 60 * PX_PER_HR;
-            var heightPx = Math.max(32, durMins / 60 * PX_PER_HR);
+            // Single inline row: icon · time · text (truncated with ellipsis if needed)
             eventsHTML +=
                 '<div class="cal-block ' + blockClass(a.icon) + '" style="top:' + topPx.toFixed(0) + 'px; height:' + heightPx.toFixed(0) + 'px">' +
-                '<div class="cal-block-header">' +
-                '<span class="cal-block-time">' + a.time + '</span>' +
                 '<span class="cal-block-icon">' + a.icon + '</span>' +
-                '</div>' +
-                '<p class="cal-block-text">' + a.text + '</p>' +
+                '<strong class="cal-block-time">' + a.time + '</strong>' +
+                '<span class="cal-block-sep">&middot;</span>' +
+                '<span class="cal-block-text">' + a.text + '</span>' +
                 '</div>';
         });
 

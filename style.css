@@ -2469,11 +2469,13 @@ body {
     left: 5px;
     right: 5px;
     border-radius: 7px;
-    padding: 5px 8px;
+    padding: 7px 8px 0;
     overflow: hidden;
     display: flex;
-    flex-direction: column;
-    gap: 2px;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: .35rem;
+    white-space: nowrap;
     transition: filter .15s ease, box-shadow .15s ease;
 }
 
@@ -2483,31 +2485,33 @@ body {
     z-index: 2;
 }
 
-.cal-block-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: .3rem;
-}
-
-.cal-block-time {
-    font-size: .58rem;
-    font-weight: 700;
-    letter-spacing: .02em;
-    opacity: .8;
-    white-space: nowrap;
-}
-
 .cal-block-icon {
     font-size: .85rem;
-    line-height: 1;
+    line-height: 1.25;
     flex-shrink: 0;
 }
 
+.cal-block-time {
+    font-size: .69rem;
+    font-weight: 700;
+    letter-spacing: .01em;
+    flex-shrink: 0;
+    line-height: 1.25;
+}
+
+.cal-block-sep {
+    font-size: .65rem;
+    flex-shrink: 0;
+    opacity: .45;
+    line-height: 1.25;
+}
+
 .cal-block-text {
-    font-size: .68rem;
-    line-height: 1.35;
-    margin: 0;
+    font-size: .69rem;
+    line-height: 1.25;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
 }
 
 /* Block color variants */
