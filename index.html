@@ -2,165 +2,376 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description"
-    content="Will Wang - WCWP 10B — An interactive budget game where you plan a live music show as a Working Class, Successful, or Trust Fund artist.">
-  <title>Show Budget — Will Wang</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@300;400;500;600;700;800&display=swap"
-    rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="StageFinder — Find your next stage. An interactive budget experience exploring the economics of live music.">
+    <title>StageFinder — Find Your Stage</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-  <!-- ===== SCREEN 1: LANDING ===== -->
-  <section id="screen-landing" class="screen active">
-    <div class="landing-backdrop"></div>
-    <div class="landing-content">
-      <p class="landing-eyebrow">Will Wang Presents</p>
-      <h1 class="landing-title">Put On a <span class="accent-text">Show</span></h1>
-      <p class="landing-subtitle">You've got a gig. You've got a dream.<br>But have you got the budget?</p>
-      <button id="btn-start" class="btn btn-primary pulse">Let's Go</button>
-    </div>
-    <div class="scroll-hint">▼</div>
-  </section>
-
-  <!-- ===== SCREEN 2: CHOOSE TIER ===== -->
-  <section id="screen-tier" class="screen">
-    <div class="container">
-      <h2 class="section-title">Who Are You?</h2>
-      <p class="section-subtitle">Choose your artist identity. This determines your total budget.</p>
-      <div class="tier-grid">
-
-        <button class="tier-card" data-tier="working">
-          <div class="tier-icon">🎸</div>
-          <h3 class="tier-name">Working Class Artist</h3>
-          <p class="tier-budget">$500</p>
-          <p class="tier-desc">Hustle, DIY, and heart. Every dollar counts.</p>
-        </button>
-
-        <button class="tier-card" data-tier="successful">
-          <div class="tier-icon">🎤</div>
-          <h3 class="tier-name">Successful Artist</h3>
-          <p class="tier-budget">$3,000</p>
-          <p class="tier-desc">You've got momentum. Spend wisely, shine brighter.</p>
-        </button>
-
-        <button class="tier-card" data-tier="trustfund">
-          <div class="tier-icon">💎</div>
-          <h3 class="tier-name">Trust Fund Figure</h3>
-          <p class="tier-budget">$10,000</p>
-          <p class="tier-desc">Money isn't the issue — taste is.</p>
-        </button>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== SCREEN 3: BUDGET ALLOCATION ===== -->
-  <section id="screen-budget" class="screen">
-    <div class="container">
-
-      <!-- Top bar: tier label + budget meter -->
-      <div class="budget-header">
-        <div class="budget-header-left">
-          <span id="budget-tier-label" class="tier-badge">Working Class</span>
-          <span class="budget-label">Budget</span>
+    <!-- ===== NAVBAR ===== -->
+    <nav class="navbar">
+        <div class="nav-inner">
+            <a href="#" class="nav-logo">
+                <span class="logo-icon">🎤</span>
+                <span class="logo-text">Stage<span class="logo-accent">Finder</span></span>
+            </a>
+            <div class="nav-links">
+                <a href="#" class="nav-link active" id="nav-find">Find Stages</a>
+                <a href="#" class="nav-link" id="nav-artists">For Artists</a>
+                <a href="#" class="nav-link" id="nav-tension">Tension</a>
+            </div>
         </div>
-        <div class="budget-meter-wrap">
-          <div class="budget-meter">
-            <div id="budget-bar" class="budget-bar" style="width:0%"></div>
-          </div>
-          <span id="budget-numbers" class="budget-numbers">$0 / $500</span>
+    </nav>
+
+    <!-- ===== SCREEN 1: HERO LANDING ===== -->
+    <section id="screen-landing" class="screen active">
+        <div class="hero">
+            <div class="hero-bg"></div>
+            <div class="noise-overlay"></div>
+            <div class="hero-content">
+                <p class="hero-eyebrow">Will Wang — WCWP 10B</p>
+                <h1 class="hero-title">Find Your Next <span class="accent-gradient">Stage</span></h1>
+                <p class="hero-subtitle">Every artist starts with a dream and a budget.<br>How far can yours take you?
+                </p>
+
+                <!-- Zillow-style search bar -->
+                <div class="search-bar">
+                    <div class="search-icon">🔍</div>
+                    <input type="text" class="search-input" placeholder="Search venues, cities, or vibes..."
+                        id="search-input" readonly>
+                    <div class="search-divider"></div>
+                    <div class="search-filters">
+                        <button class="filter-btn active" data-tier="working">
+                            <span class="filter-label">Budget</span>
+                            <span class="filter-value">$500</span>
+                        </button>
+                        <button class="filter-btn" data-tier="successful">
+                            <span class="filter-label">Budget</span>
+                            <span class="filter-value">$3,000</span>
+                        </button>
+                        <button class="filter-btn" data-tier="trustfund">
+                            <span class="filter-label">Budget</span>
+                            <span class="filter-value">$10,000</span>
+                        </button>
+                    </div>
+                    <button id="btn-search" class="search-cta">Find Stages →</button>
+                </div>
+
+                <!-- Venue type pills -->
+            </div>
         </div>
-      </div>
 
-      <h2 class="section-title">Plan Your Show</h2>
-      <p class="section-subtitle">Pick a cost level for each category. Watch your budget — and your time.</p>
-
-      <!-- Category cards generated by JS -->
-      <div id="categories-container" class="categories-container"></div>
-
-      <div class="budget-actions">
-        <button id="btn-back-tier" class="btn btn-ghost">← Change Artist</button>
-        <button id="btn-see-results" class="btn btn-primary" disabled>See Results</button>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- ===== SCREEN 4: RANDOM EVENTS ===== -->
-  <section id="screen-events" class="screen">
-    <div class="container events-container">
-      <div class="events-header">
-        <span class="events-icon">⚡</span>
-        <h2 class="section-title">Plot Twist</h2>
-      </div>
-      <p class="section-subtitle">Life doesn't care about your plans. Here's what happened.</p>
-      <div id="events-list" class="events-list"></div>
-      <div id="events-impact" class="events-impact"></div>
-      <button id="btn-continue-results" class="btn btn-primary">See Your Final Results →</button>
-    </div>
-  </section>
-
-  <!-- ===== SCREEN 5: RESULTS ===== -->
-  <section id="screen-results" class="screen">
-    <div class="container results-container">
-
-      <div id="results-outcome" class="results-outcome"></div>
-
-      <div class="results-grid">
-        <div class="results-card">
-          <p class="results-card-label">Total Spent</p>
-          <p id="results-spent" class="results-card-value">$0</p>
+        <!-- Featured venues carousel (decorative) -->
+        <div class="featured-section">
+            <div class="featured-inner">
+                <h2 class="featured-title">Trending Stages in San Diego</h2>
+                <p class="featured-subtitle">Most booked this week</p>
+                <div class="venue-carousel">
+                    <div class="venue-card-preview">
+                        <div class="venue-img">
+                            <img src="assets/Che Cafe.jpeg" alt="Che Cafe Collective" />
+                            <span class="venue-badge">DIY</span>
+                        </div>
+                        <div class="venue-card-body">
+                            <h3>Che Cafe Collective</h3>
+                            <p class="venue-meta">📍 La Jolla · 150 cap</p>
+                            <p class="venue-price">From <strong>$150</strong>/night</p>
+                        </div>
+                    </div>
+                    <div class="venue-card-preview">
+                        <div class="venue-img">
+                            <img src="assets/Belly Up Tavern.jpg" alt="Belly Up Tavern" />
+                            <span class="venue-badge hot">Popular</span>
+                        </div>
+                        <div class="venue-card-body">
+                            <h3>Belly Up Tavern</h3>
+                            <p class="venue-meta">📍 Solana Beach · 600 cap</p>
+                            <p class="venue-price">From <strong>$850</strong>/night</p>
+                        </div>
+                    </div>
+                    <div class="venue-card-preview">
+                        <div class="venue-img">
+                            <img src="assets/The Conrad.jpeg" alt="The Conrad / La Jolla Music Society" />
+                            <span class="venue-badge premium">Premium</span>
+                        </div>
+                        <div class="venue-card-body">
+                            <h3>The Conrad / La Jolla Music Society</h3>
+                            <p class="venue-meta">📍 La Jolla · 1,400 cap</p>
+                            <p class="venue-price">From <strong>$1,800</strong>/night</p>
+                        </div>
+                    </div>
+                    <div class="venue-card-preview">
+                        <div class="venue-img">
+                            <img src="assets/House of Blues.jpg" alt="House of Blues San Diego" />
+                            <span class="venue-badge">Intimate</span>
+                        </div>
+                        <div class="venue-card-body">
+                            <h3>House of Blues San Diego</h3>
+                            <p class="venue-meta">📍 Downtown SD · 1,100 cap</p>
+                            <p class="venue-price">From <strong>$1,200</strong>/night</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="results-card">
-          <p class="results-card-label">Budget</p>
-          <p id="results-budget" class="results-card-value">$500</p>
+
+        <!-- How it works section (like Zillow's Buy/Rent/Sell cards) -->
+        <div class="how-section">
+            <div class="how-inner">
+                <h2 class="how-title">The Reality of Putting On a Show</h2>
+                <p class="how-subtitle">It's not just about the music. It's about the money, the time, and the hustle.
+                </p>
+                <div class="how-grid">
+                    <div class="how-card">
+                        <div class="how-emoji">💰</div>
+                        <h3>Pick Your Budget</h3>
+                        <p>$500 working class, $3K mid-tier, or $10K trust fund — your budget shapes every decision.</p>
+                        <button class="btn btn-outline" id="btn-start">Start Planning →</button>
+                    </div>
+                    <div class="how-card">
+                        <div class="how-emoji">🎛️</div>
+                        <h3>Book Your Services</h3>
+                        <p>Venue, gear, transport, promotion, staff — each choice costs money AND time.</p>
+                    </div>
+                    <div class="how-card">
+                        <div class="how-emoji">⚡</div>
+                        <h3>Survive the Curveballs</h3>
+                        <p>Life happens. Amps blow fuses, drummers break down, promoters short you. Can you handle it?
+                        </p>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="results-card">
-          <p class="results-card-label">Remaining</p>
-          <p id="results-remaining" class="results-card-value">$0</p>
+    </section>
+
+    <!-- ===== SCREEN 2: BOOKING PAGE (Budget Allocation) ===== -->
+    <section id="screen-booking" class="screen">
+        <div class="noise-overlay"></div>
+        <div class="booking-layout">
+
+            <!-- Left: Sticky budget sidebar -->
+            <aside class="booking-sidebar">
+                <div class="sidebar-card">
+                    <div class="sidebar-header">
+                        <h3 class="sidebar-title">Your Booking</h3>
+                        <button id="btn-change-search" class="sidebar-change">← New Search</button>
+                    </div>
+
+                    <!-- Tier tabs -->
+                    <div class="tier-tabs" id="tier-tabs">
+                        <button class="tier-tab selected" data-tier="working">
+                            <span class="tab-emoji">🎸</span>
+                            <span class="tab-label">Working Class</span>
+                            <span class="tab-budget">$500</span>
+                        </button>
+                        <button class="tier-tab" data-tier="successful">
+                            <span class="tab-emoji">🎤</span>
+                            <span class="tab-label">Successful</span>
+                            <span class="tab-budget">$3,000</span>
+                        </button>
+                        <button class="tier-tab" data-tier="trustfund">
+                            <span class="tab-emoji">💎</span>
+                            <span class="tab-label">Trust Fund</span>
+                            <span class="tab-budget">$10,000</span>
+                        </button>
+                    </div>
+
+                    <div class="sidebar-budget">
+                        <div class="sidebar-budget-row">
+                            <span>Budget</span>
+                            <span id="sidebar-total-budget" class="sidebar-val">$500</span>
+                        </div>
+                        <div class="sidebar-budget-row">
+                            <span>Spent</span>
+                            <span id="sidebar-spent" class="sidebar-val spent">$0</span>
+                        </div>
+                        <div class="sidebar-divider"></div>
+                        <div class="sidebar-budget-row remaining-row">
+                            <span>Remaining</span>
+                            <span id="sidebar-remaining" class="sidebar-val remaining">$500</span>
+                        </div>
+                    </div>
+
+                    <div class="sidebar-meter">
+                        <div class="sidebar-meter-bar">
+                            <div id="sidebar-bar" class="sidebar-bar-fill" style="width: 0%"></div>
+                        </div>
+                        <div class="sidebar-meter-labels">
+                            <span>0%</span>
+                            <span id="sidebar-pct">0%</span>
+                        </div>
+                    </div>
+
+                    <!-- Selection summary (filled by JS) -->
+                    <div id="sidebar-selections" class="sidebar-selections"></div>
+
+                    <button id="btn-see-results" class="btn btn-cta-full" disabled>
+                        Complete Booking →
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Right: Service categories grid -->
+            <main class="booking-main">
+                <div class="booking-main-header">
+                    <h2 class="booking-title">Configure Your Show</h2>
+                    <p class="booking-subtitle">Select a package for each service. Your budget and time are on the line.
+                    </p>
+                </div>
+                <div id="categories-container" class="categories-grid"></div>
+            </main>
+
         </div>
-        <div class="results-card">
-          <p class="results-card-label">Time Invested</p>
-          <p id="results-hours" class="results-card-value">0 hrs</p>
+    </section>
+
+    <!-- ===== SCREEN: FOR ARTISTS ===== -->
+    <section id="screen-for-artists" class="screen">
+        <div class="info-page">
+            <div class="info-page-hero">
+                <div class="hero-bg"></div>
+                <div class="noise-overlay"></div>
+                <div class="info-page-hero-content">
+                    <span class="info-page-eyebrow">🎸 For Artists</span>
+                    <h1 class="info-page-title">Built for the <span class="accent-gradient">Working Musician</span></h1>
+                    <p class="info-page-subtitle">Tools, resources, and community for artists navigating the real
+                        economics of live performance — at every level.</p>
+                    <button class="btn btn-ghost" id="btn-back-artists">← Back to StageFinder</button>
+                </div>
+            </div>
+            <div class="info-page-body">
+                <div class="info-section">
+                    <h2 class="info-section-title">Your Journey</h2>
+                    <div class="info-cards">
+                        <div class="info-card">
+                            <div class="info-card-icon">🎸</div>
+                            <h3>Artist Profiles</h3>
+                            <p>Showcase your sound, history, and upcoming shows in one place. Venues and promoters can
+                                find you directly — no middleman required.</p>
+                            <span class="info-card-tag">Coming Soon</span>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-card-icon">📅</div>
+                            <h3>Tour Planning Tools</h3>
+                            <p>Map out your next run — routing, budgeting, and venue outreach. Stop guessing, start
+                                building a real itinerary that works for your budget.</p>
+                            <span class="info-card-tag">Coming Soon</span>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-card-icon">💸</div>
+                            <h3>Budget Calculator</h3>
+                            <p>Know your real costs before you commit to a show date. Venue deposit, gear rental,
+                                transport, promo — it all adds up. Stop finding out the hard way.</p>
+                            <span class="info-card-tag">Try It Now</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="info-section">
+                    <h2 class="info-section-title">Resources</h2>
+                    <div class="info-cards">
+                        <div class="info-card">
+                            <div class="info-card-icon">📖</div>
+                            <h3>The Indie Artist Guide</h3>
+                            <p>From DIY basement gigs to mid-size halls — a practical, unromantic handbook for artists
+                                who are figuring it out without a label or a trust fund.</p>
+                            <span class="info-card-tag">Coming Soon</span>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-card-icon">🤝</div>
+                            <h3>Promoter Network</h3>
+                            <p>Connect with local bookers, promoters, and venue managers in the San Diego scene. Real
+                                contacts, real relationships, no gatekeeping.</p>
+                            <span class="info-card-tag">Coming Soon</span>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-card-icon">📊</div>
+                            <h3>Revenue Breakdown Tool</h3>
+                            <p>Door splits, merch margins, streaming fractions — understand where every dollar goes and
+                                what you actually take home after a show.</p>
+                            <span class="info-card-tag">Coming Soon</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
+    </section>
 
-      <!-- Audience Reaction Meter -->
-      <div id="results-audience" class="results-audience"></div>
+    <!-- ===== SCREEN: TENSION ===== -->
+    <section id="screen-tension" class="screen">
+        <div class="info-page">
+            <div class="info-page-hero tension-hero">
+                <div class="hero-bg"></div>
+                <div class="noise-overlay"></div>
+                <div class="info-page-hero-content">
+                    <span class="info-page-eyebrow">⚡ Tension</span>
+                    <h1 class="info-page-title">The Cost of <span class="accent-gradient">Playing Live</span></h1>
+                    <p class="info-page-subtitle">A WCWP 10B research project exploring what it actually takes to put on
+                        a show in San Diego — and why your zip code, your day job, and your bank account determine
+                        everything.</p>
+                    <button class="btn btn-ghost" id="btn-back-tension">← Back to StageFinder</button>
+                </div>
+            </div>
+            <div class="info-page-body">
+                <div class="info-section">
+                    <h2 class="info-section-title">The Simulation</h2>
+                    <div class="info-cards">
+                        <div class="info-card">
+                            <div class="info-card-icon">🔍</div>
+                            <h3>Search &amp; Discover</h3>
+                            <p>Filter real San Diego venues by capacity, cost, and vibe. Every search reveals a
+                                different reality depending on your budget tier.</p>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-card-icon">⚡</div>
+                            <h3>Simulate Your Show</h3>
+                            <p>Choose your services, watch your budget drain, survive the curveballs. This is what show
+                                day actually looks like — before and after things go wrong.</p>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-card-icon">📊</div>
+                            <h3>Compare Tiers</h3>
+                            <p>See the same show through three different financial realities. The music is the same. The
+                                experience — and the stakes — couldn't be more different.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="info-section">
+                    <h2 class="info-section-title">The Research</h2>
+                    <div class="info-cards">
+                        <div class="info-card">
+                            <div class="info-card-icon">🎓</div>
+                            <h3>WCWP 10B Research</h3>
+                            <p>An interactive study on the economic barriers facing working class musicians in San Diego
+                                — who gets to perform, who doesn't, and why the gap keeps growing.</p>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-card-icon">🗺️</div>
+                            <h3>San Diego Scene</h3>
+                            <p>The local music ecosystem — from the Che Cafe to the Conrad — and what the survival of
+                                each venue says about access, community, and money in live music.</p>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-card-icon">🏚️</div>
+                            <h3>DIY or Die</h3>
+                            <p>When you can't afford a booker, a manager, or a sound engineer, you become all three.
+                                What does that labor actually cost, and who's paying for it?</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-      <!-- Consequences (over-budget working class) -->
-      <div id="results-consequences" class="results-consequences"></div>
+    <script src="game.js"></script>
 
-      <!-- Breakdown Table -->
-      <div id="results-breakdown" class="results-breakdown"></div>
-
-      <!-- Time vs Money Chart -->
-      <div id="results-chart" class="results-chart-section"></div>
-
-      <!-- Side-by-Side Comparison -->
-      <div id="results-comparison" class="results-comparison-section"></div>
-
-      <!-- Day in the Life Timeline -->
-      <div id="results-timeline" class="results-timeline-section"></div>
-
-      <!-- Narrative -->
-      <div id="results-narrative" class="results-narrative"></div>
-
-      <div class="results-actions">
-        <button id="btn-share" class="btn btn-ghost">Share Results 📤</button>
-        <button id="btn-replay" class="btn btn-primary">Play Again</button>
-      </div>
-    </div>
-  </section>
-
-  <script src="game.js"></script>
 </body>
 
 </html>

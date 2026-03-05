@@ -1,6 +1,6 @@
 /* ================================================
-   WCWP 10B — Show Budget Game Logic
-   Full interactive version with all enhancements
+   StageFinder — V3  •  Venue-Booking Platform
+   Game logic adapted for new layout
    ================================================ */
 
 (function () {
@@ -19,9 +19,10 @@
             name: "Venue",
             emoji: "🏟️",
             options: [
-                { level: "low", label: "DIY / Che Cafe", cost: 150, hours: [8, 10], desc: "Warehouse vibes. You're hauling gear, setting up the PA, and cleaning up after." },
-                { level: "mid", label: "Belly Up / Music Box", cost: 850, hours: [5, 7], desc: "Real stage, real sound. They handle most logistics." },
-                { level: "high", label: "The Conrad / The Shell", cost: 1800, hours: [2, 5], desc: "Premium venue with full production. Just show up and play." },
+                { level: "low", label: "Che Cafe Collective", cost: 150, hours: [8, 10], desc: "DIY all-ages space in La Jolla. You haul gear, set up the PA, run the door, and clean up after. Pure grassroots.", img: "assets/Che Cafe.jpeg", cap: 150 },
+                { level: "mid", label: "Belly Up Tavern", cost: 850, hours: [5, 7], desc: "Legendary room in Solana Beach. Real stage, real sound system. They handle most logistics — you just bring the music.", img: "assets/Belly Up Tavern.jpg", cap: 600 },
+                { level: "mid-high", label: "House of Blues San Diego", cost: 1200, hours: [3, 5], desc: "Downtown SD institution. Professional production, dedicated sound and lighting crew. A big step up in exposure.", img: "assets/House of Blues.jpg", cap: 1100 },
+                { level: "high", label: "The Conrad / La Jolla Music Society", cost: 1800, hours: [2, 4], desc: "Premium concert hall in La Jolla. Full production, catered green room, 1,400 seats. Just show up and play.", img: "assets/The Conrad.jpeg", cap: 1400 },
             ],
         },
         {
@@ -192,8 +193,8 @@
 
     // -------- STATE --------
     var state = {
-        tier: null,
-        budget: 0,
+        tier: "working",
+        budget: 500,
         selections: {},
         events: [],
         eventCostImpact: 0,
@@ -207,17 +208,84 @@
 
     var screens = {
         landing: $("#screen-landing"),
-        tier: $("#screen-tier"),
-        budget: $("#screen-budget"),
-        events: $("#screen-events"),
-        results: $("#screen-results"),
+        booking: $("#screen-booking"),
     };
 
+    // Dynamic screen registry
+    var dynamicScreens = {};
+
     // -------- NAVIGATION --------
+    var staticInfoScreens = ["for-artists", "tension"];
+
     function showScreen(name) {
-        Object.values(screens).forEach(function (s) { s.classList.remove("active"); });
-        screens[name].classList.add("active");
+        // Hide all static screens
+        $("#screen-landing").classList.remove("active");
+        $("#screen-booking").classList.remove("active");
+        staticInfoScreens.forEach(function (s) {
+            var el = $("#screen-" + s);
+            if (el) el.classList.remove("active");
+        });
+        // Hide any dynamic screens
+        Object.values(dynamicScreens).forEach(function (s) { s.classList.remove("active"); });
+
+        if (name === "landing") {
+            $("#screen-landing").classList.add("active");
+        } else if (name === "booking") {
+            $("#screen-booking").classList.add("active");
+        } else if (staticInfoScreens.indexOf(name) !== -1) {
+            var el = $("#screen-" + name);
+            if (el) el.classList.add("active");
+        } else if (dynamicScreens[name]) {
+            dynamicScreens[name].classList.add("active");
+        }
         window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    // -------- SIDEBAR UPDATE --------
+    function updateSidebar() {
+        var spent = Object.values(state.selections).reduce(function (sum, o) { return sum + o.cost; }, 0);
+        var remaining = state.budget - spent;
+        var pct = Math.min((spent / state.budget) * 100, 100);
+
+        $("#sidebar-total-budget").textContent = "$" + state.budget.toLocaleString();
+        $("#sidebar-spent").textContent = "$" + spent.toLocaleString();
+        $("#sidebar-remaining").textContent = (remaining >= 0 ? "" : "-") + "$" + Math.abs(remaining).toLocaleString();
+        $("#sidebar-pct").textContent = Math.round(pct) + "%";
+
+        var remainEl = $("#sidebar-remaining");
+        remainEl.className = "sidebar-val remaining " + (remaining >= 0 ? "green" : "red");
+
+        var bar = $("#sidebar-bar");
+        bar.style.width = pct + "%";
+
+        if (spent > state.budget) {
+            bar.classList.add("over");
+            bar.classList.remove("warning");
+            var card = $(".sidebar-card");
+            card.classList.add("shake");
+            setTimeout(function () { card.classList.remove("shake"); }, 600);
+        } else if (pct >= 80) {
+            bar.classList.add("warning");
+            bar.classList.remove("over");
+        } else {
+            bar.classList.remove("over", "warning");
+        }
+
+        // Update selections summary
+        var selEl = $("#sidebar-selections");
+        selEl.innerHTML = "";
+        CATEGORIES.forEach(function (cat) {
+            var sel = state.selections[cat.id];
+            if (sel) {
+                var div = document.createElement("div");
+                div.className = "sidebar-sel-item";
+                div.innerHTML = '<span>' + cat.emoji + ' ' + cat.name + '</span><span class="sel-cost">$' + sel.cost.toLocaleString() + '</span>';
+                selEl.appendChild(div);
+            }
+        });
+
+        var allSelected = CATEGORIES.every(function (c) { return state.selections[c.id]; });
+        $("#btn-see-results").disabled = !allSelected;
     }
 
     // -------- RENDER: Category Cards --------
@@ -238,13 +306,19 @@
                 '<div class="category-header">' +
                 '<span class="category-emoji">' + cat.emoji + '</span>' +
                 '<span class="category-name">' + cat.name + '</span>' +
-                '<span class="category-hours-badge">' + minH + '–' + maxH + ' hrs total range</span>' +
+                '<span class="category-hours-badge">' + minH + '–' + maxH + ' hrs</span>' +
                 '</div>' +
-                '<div class="option-grid">' +
+                '<div class="option-grid' + (cat.id === "venue" ? " venue-option-grid" : "") + '">' +
                 cat.options.map(function (opt) {
-                    var tierLabel = opt.level === "low" ? "Low Cost" : opt.level === "mid" ? "Medium Cost" : "High Cost";
-                    return '<button class="option-btn" data-cat="' + cat.id + '" data-level="' + opt.level + '">' +
+                    var tierLabel = opt.level === "low" ? "Budget" : opt.level === "mid" ? "Standard" : opt.level === "mid-high" ? "Mid-Range" : "Premium";
+                    var venueExtra = "";
+                    if (cat.id === "venue" && opt.img) {
+                        venueExtra = '<div class="option-venue-img"><img src="' + opt.img + '" alt="' + opt.label + '"><span class="option-venue-cap">' + opt.cap.toLocaleString() + ' cap</span></div>';
+                    }
+                    return '<button class="option-btn' + (cat.id === "venue" ? " venue-option-btn" : "") + '" data-cat="' + cat.id + '" data-level="' + opt.level + '">' +
+                        venueExtra +
                         '<div class="option-tier-label">' + tierLabel + '</div>' +
+                        '<div class="option-label">' + opt.label + '</div>' +
                         '<div class="option-cost">$' + opt.cost.toLocaleString() + '</div>' +
                         '<div class="option-desc">' + opt.desc + '</div>' +
                         '<div class="option-hours">⏱ ' + opt.hours[0] + '–' + opt.hours[1] + ' hrs</div>' +
@@ -255,7 +329,6 @@
             container.appendChild(card);
         });
 
-        // Attach option click handlers
         container.querySelectorAll(".option-btn").forEach(function (btn) {
             btn.addEventListener("click", function () { handleOptionSelect(btn); });
         });
@@ -265,7 +338,6 @@
     function handleOptionSelect(btn) {
         var catId = btn.dataset.cat;
         var level = btn.dataset.level;
-
         var cat = CATEGORIES.find(function (c) { return c.id === catId; });
         var opt = cat.options.find(function (o) { return o.level === level; });
 
@@ -276,45 +348,160 @@
         btn.classList.add("selected");
         card.classList.add("completed");
 
-        // Visual feedback flash
         btn.classList.add("just-selected");
-        setTimeout(function () { btn.classList.remove("just-selected"); }, 400);
+        setTimeout(function () { btn.classList.remove("just-selected"); }, 350);
 
-        updateBudgetBar();
-
-        var allSelected = CATEGORIES.every(function (c) { return state.selections[c.id]; });
-        $("#btn-see-results").disabled = !allSelected;
+        updateSidebar();
     }
 
-    // -------- BUDGET BAR --------
-    function updateBudgetBar() {
+    // -------- DYNAMIC SCREEN BUILDERS --------
+    function createBookingConfirmationScreen() {
+        if (dynamicScreens.confirmation) { dynamicScreens.confirmation.remove(); }
+
         var spent = Object.values(state.selections).reduce(function (sum, o) { return sum + o.cost; }, 0);
-        var pct = Math.min((spent / state.budget) * 100, 100);
-        var bar = $("#budget-bar");
-        bar.style.width = pct + "%";
+        var remaining = state.budget - spent;
+        var overBudget = spent > state.budget;
 
-        if (spent > state.budget) {
-            bar.classList.add("over");
-            // Shake the budget header
-            var header = $(".budget-header");
-            header.classList.add("shake");
-            setTimeout(function () { header.classList.remove("shake"); }, 600);
-        } else {
-            bar.classList.remove("over");
-        }
+        var rowsHTML = "";
+        CATEGORIES.forEach(function (cat) {
+            var sel = state.selections[cat.id];
+            var tierLabel = sel.level === "low" ? "Budget" : sel.level === "mid" ? "Standard" : "Premium";
+            rowsHTML +=
+                '<div class="conf-row">' +
+                '<span class="conf-row-cat">' + cat.emoji + ' ' + cat.name + '</span>' +
+                '<span class="conf-row-choice">' + tierLabel + ' &mdash; ' + sel.desc.split('.')[0] + '</span>' +
+                '<span class="conf-row-cost">$' + sel.cost.toLocaleString() + '</span>' +
+                '</div>';
+        });
 
-        // Pulse warning when approaching 80%
-        if (pct >= 80 && pct < 100) {
-            bar.classList.add("warning");
-        } else {
-            bar.classList.remove("warning");
-        }
+        var sec = document.createElement("section");
+        sec.id = "screen-confirmation";
+        sec.className = "screen";
+        sec.innerHTML =
+            '<div class="noise-overlay"></div>' +
+            '<div class="container conf-container">' +
+            '<div class="conf-header">' +
+            '<span class="conf-badge">&#128203; BOOKING SUMMARY</span>' +
+            '<h2 class="conf-title">Your Booking Is Set</h2>' +
+            '<p class="conf-subtitle">Here\'s what you\'ve committed to as a <strong>' + TIERS[state.tier].label + '</strong>. Get ready &mdash; show night is about to start.</p>' +
+            '</div>' +
+            '<div class="conf-receipt">' +
+            '<div class="conf-rows">' + rowsHTML + '</div>' +
+            '<div class="conf-divider"></div>' +
+            '<div class="conf-totals">' +
+            '<div class="conf-total-row"><span>Budget</span><span class="conf-total-val">$' + state.budget.toLocaleString() + '</span></div>' +
+            '<div class="conf-total-row"><span>Total Committed</span><span class="conf-total-val ' + (overBudget ? 'red' : '') + '">$' + spent.toLocaleString() + '</span></div>' +
+            '<div class="conf-total-row conf-remaining-row"><span>Remaining</span><span class="conf-total-val ' + (overBudget ? 'red' : 'green') + '">' + (overBudget ? '-' : '+') + '$' + Math.abs(remaining).toLocaleString() + '</span></div>' +
+            '</div>' +
+            '</div>' +
+            '<p class="conf-cta-hint">&#128262; It\'s show night. Expect the unexpected.</p>' +
+            '<button id="btn-goto-events" class="btn btn-cta-full">Head to Show Night &#8594;</button>' +
+            '</div>';
 
-        $("#budget-numbers").textContent = "$" + spent.toLocaleString() + " / $" + state.budget.toLocaleString();
+        document.body.insertBefore(sec, document.querySelector("script"));
+        dynamicScreens.confirmation = sec;
+
+        sec.querySelector("#btn-goto-events").addEventListener("click", function () {
+            triggerRandomEvents();
+        });
+    }
+
+    function createEventsScreen() {
+        if (dynamicScreens.events) { dynamicScreens.events.remove(); }
+
+        var sec = document.createElement("section");
+        sec.id = "screen-events";
+        sec.className = "screen";
+        sec.innerHTML =
+            '<div class="noise-overlay"></div>' +
+            '<div class="container events-container">' +
+            '<div class="events-header">' +
+            '<span class="events-badge">⚡ BOOKING ALERT</span>' +
+            '<h2 class="events-title">Something Came Up</h2>' +
+            '</div>' +
+            '<p class="events-subtitle">Real life doesn\'t care about your booking. Here\'s what happened.</p>' +
+            '<div id="events-list" class="events-list"></div>' +
+            '<div id="events-impact" class="events-impact"></div>' +
+            '<button id="btn-continue-results" class="btn btn-cta-full">See How the Show Went &#8594;</button>' +
+            '</div>';
+
+        document.body.insertBefore(sec, document.querySelector("script"));
+        dynamicScreens.events = sec;
+
+        sec.querySelector("#btn-continue-results").addEventListener("click", function () {
+            showResults();
+        });
+    }
+
+    function createResultsScreen() {
+        if (dynamicScreens.results) { dynamicScreens.results.remove(); }
+
+        var sec = document.createElement("section");
+        sec.id = "screen-results";
+        sec.className = "screen";
+        sec.innerHTML =
+            '<div class="noise-overlay"></div>' +
+            '<div class="container results-container">' +
+            '<div class="confirmation-header">' +
+            '<div class="confirmation-badge" id="confirmation-badge">\u2713</div>' +
+            '<h2 id="confirmation-title" class="confirmation-title">Booking Confirmed</h2>' +
+            '<p id="confirmation-subtitle" class="confirmation-subtitle"></p>' +
+            '</div>' +
+            '<div class="results-grid">' +
+            '<div class="results-card"><p class="results-card-label">Total Spent</p><p id="results-spent" class="results-card-value">$0</p></div>' +
+            '<div class="results-card"><p class="results-card-label">Budget</p><p id="results-budget" class="results-card-value">$500</p></div>' +
+            '<div class="results-card"><p class="results-card-label">Remaining</p><p id="results-remaining" class="results-card-value">$0</p></div>' +
+            '<div class="results-card"><p class="results-card-label">Time Invested</p><p id="results-hours" class="results-card-value">0 hrs</p></div>' +
+            '</div>' +
+            '<div id="results-audience" class="results-audience"></div>' +
+            '<div id="results-consequences" class="results-consequences"></div>' +
+            '<div id="results-breakdown" class="results-breakdown"></div>' +
+            '<div id="results-chart" class="results-chart-section"></div>' +
+            '<div id="results-comparison" class="results-comparison-section"></div>' +
+            '<div id="results-timeline" class="results-timeline-section"></div>' +
+            '<div id="results-narrative" class="results-narrative"></div>' +
+            '<div class="results-actions">' +
+            '<button id="btn-share" class="btn btn-ghost">Share Results \ud83d\udce4</button>' +
+            '<button id="btn-replay" class="btn btn-primary">Book Another Show</button>' +
+            '</div></div>';
+
+        document.body.insertBefore(sec, document.querySelector("script"));
+        dynamicScreens.results = sec;
+
+        sec.querySelector("#btn-share").addEventListener("click", function () {
+            var baseCost = Object.values(state.selections).reduce(function (sum, o) { return sum + o.cost; }, 0);
+            var spent = baseCost + state.eventCostImpact;
+            var remaining = state.budget - spent;
+            var minH = 0, maxH = 0;
+            Object.values(state.selections).forEach(function (o) { minH += o.hours[0]; maxH += o.hours[1]; });
+            var avgH = Math.round((minH + maxH) / 2) + state.eventHoursImpact;
+            shareResults(spent, remaining, avgH);
+        });
+
+        sec.querySelector("#btn-replay").addEventListener("click", function () {
+            state.tier = "working";
+            state.budget = 500;
+            state.selections = {};
+            state.events = [];
+            state.eventCostImpact = 0;
+            state.eventHoursImpact = 0;
+            state.audienceScore = 0;
+            // Remove dynamic screens from DOM
+            Object.values(dynamicScreens).forEach(function (s) { s.remove(); });
+            dynamicScreens = {};
+            // Reset filter buttons
+            $$("[data-tier]").forEach(function (b) {
+                b.classList.remove("active");
+                if (b.classList.contains("filter-btn") && b.dataset.tier === "working") b.classList.add("active");
+            });
+            showScreen("landing");
+        });
     }
 
     // -------- RANDOM EVENTS --------
     function triggerRandomEvents() {
+        createEventsScreen();
+
         var shuffled = RANDOM_EVENTS.slice().sort(function () { return 0.5 - Math.random(); });
         var count = Math.random() < 0.4 ? 1 : 2;
         state.events = shuffled.slice(0, count);
@@ -353,15 +540,11 @@
             listEl.appendChild(card);
         });
 
-        // Show impact summary
         var impactEl = $("#events-impact");
         var summaryParts = [];
-        if (state.eventCostImpact > 0) {
-            summaryParts.push("added <strong>$" + state.eventCostImpact + "</strong> to your costs");
-        }
-        if (state.eventHoursImpact > 0) {
-            summaryParts.push("ate <strong>" + state.eventHoursImpact + " more hours</strong> of your time");
-        }
+        if (state.eventCostImpact > 0) summaryParts.push("added <strong>$" + state.eventCostImpact + "</strong> to your costs");
+        if (state.eventHoursImpact > 0) summaryParts.push("ate <strong>" + state.eventHoursImpact + " more hours</strong> of your time");
+
         var summaryText = summaryParts.length > 0
             ? "These curveballs " + summaryParts.join(" and ") + "."
             : "Somehow, you dodged every bullet. Lucky.";
@@ -372,19 +555,13 @@
 
     // -------- AUDIENCE REACTION --------
     function calculateAudienceReaction() {
-        // Working class artists get an authenticity base bonus
         var base = state.tier === "working" ? 55 : state.tier === "successful" ? 45 : 28;
-
-        // DIY choices boost authenticity
         Object.values(state.selections).forEach(function (sel) {
             if (sel.level === "low") base += 8;
             else if (sel.level === "mid") base += 5;
-            else base += 2; // Overproduced can feel corporate
+            else base += 2;
         });
-
-        // Random factor ±12
         base += Math.floor(Math.random() * 25) - 12;
-
         return Math.max(15, Math.min(100, base));
     }
 
@@ -420,37 +597,27 @@
             '<div class="audience-meter-fill" style="width:0%"></div>' +
             '</div>' +
             '<div class="audience-meter-labels">' +
-            '<span>🦗 Dead</span>' +
-            '<span>🤯 Legendary</span>' +
-            '</div>' +
-            '</div>' +
+            '<span>🦗 Dead</span><span>🤯 Legendary</span>' +
+            '</div></div>' +
             '<span class="audience-score">' + score + '<small>/100</small></span>' +
             '</div>' +
             '<p class="audience-label">' + label + '</p>' +
             '<p class="audience-desc">' + desc + '</p>' +
             '</div>';
 
-        // Animate the meter fill after a brief delay
         setTimeout(function () {
             var fill = el.querySelector(".audience-meter-fill");
             if (fill) fill.style.width = score + "%";
         }, 300);
     }
 
-    // -------- CONSEQUENCES / DEBT TRACKER --------
+    // -------- CONSEQUENCES --------
     function renderConsequences(overAmount) {
         var el = $("#results-consequences");
-        if (overAmount <= 0 || state.tier !== "working") {
-            el.innerHTML = "";
-            return;
-        }
+        if (overAmount <= 0 || state.tier !== "working") { el.innerHTML = ""; return; }
 
         var triggered = CONSEQUENCES.filter(function (c) { return overAmount >= c.threshold; });
-
-        if (triggered.length === 0) {
-            el.innerHTML = "";
-            return;
-        }
+        if (triggered.length === 0) { el.innerHTML = ""; return; }
 
         var html = '<div class="consequences-card">' +
             '<h3>💳 The Real Cost</h3>' +
@@ -461,32 +628,22 @@
             html += '<li class="consequence-item"><span class="consequence-emoji">' + c.emoji + '</span><span>' + c.text + '</span></li>';
         });
 
-        html += '</ul>' +
-            '<p class="consequences-outro">The music industry doesn\'t hand out safety nets. You just played without one.</p>' +
-            '</div>';
-
+        html += '</ul><p class="consequences-outro">The music industry doesn\'t hand out safety nets. You just played without one.</p></div>';
         el.innerHTML = html;
     }
 
-    // -------- SIDE-BY-SIDE COMPARISON --------
+    // -------- COMPARISON --------
     function renderComparison(spent) {
         var compEl = $("#results-comparison");
         var rows = "";
-
         Object.keys(TIERS).forEach(function (tierKey) {
             var t = TIERS[tierKey];
             var isCurrentTier = tierKey === state.tier;
             var diff = t.budget - spent;
             var pctUsed = Math.min((spent / t.budget) * 100, 100);
 
-            var statusClass, statusText;
-            if (diff >= 0) {
-                statusClass = "green";
-                statusText = "+$" + diff.toLocaleString() + " left";
-            } else {
-                statusClass = "red";
-                statusText = "-$" + Math.abs(diff).toLocaleString() + " over";
-            }
+            var statusClass = diff >= 0 ? "green" : "red";
+            var statusText = diff >= 0 ? "+$" + diff.toLocaleString() + " left" : "-$" + Math.abs(diff).toLocaleString() + " over";
 
             rows += '<div class="comparison-row' + (isCurrentTier ? ' current' : '') + '">' +
                 '<div class="comparison-info">' +
@@ -494,9 +651,7 @@
                 '<span class="comparison-budget">$' + t.budget.toLocaleString() + ' budget</span>' +
                 '</div>' +
                 '<div class="comparison-visual">' +
-                '<div class="comparison-bar-bg">' +
-                '<div class="comparison-bar-fill" style="width:' + pctUsed + '%"></div>' +
-                '</div>' +
+                '<div class="comparison-bar-bg"><div class="comparison-bar-fill" style="width:' + pctUsed + '%"></div></div>' +
                 '<span class="comparison-status ' + statusClass + '">' + statusText + '</span>' +
                 '</div>' +
                 (isCurrentTier ? '<span class="comparison-you">← You</span>' : '') +
@@ -509,11 +664,9 @@
             '<div class="comparison-grid">' + rows + '</div>';
     }
 
-    // -------- TIME VS MONEY CHART --------
+    // -------- TIME VS MONEY --------
     function renderTimeVsMoney(spent, avgHours) {
         var chartEl = $("#results-chart");
-
-        // Approximate what other tiers would experience
         var data = [];
         var tierKeys = ["working", "successful", "trustfund"];
         var tierLabels = ["Working Class", "Successful", "Trust Fund"];
@@ -523,16 +676,10 @@
             var isMe = tk === state.tier;
             var hrs = isMe ? avgHours : Math.round(avgHours * hourMultipliers[tk] / hourMultipliers[state.tier]);
             hrs = Math.max(8, hrs);
-            data.push({
-                tier: tierLabels[i],
-                hours: isMe ? avgHours : hrs,
-                budget: TIERS[tk].budget,
-                isCurrent: isMe
-            });
+            data.push({ tier: tierLabels[i], hours: isMe ? avgHours : hrs, budget: TIERS[tk].budget, isCurrent: isMe });
         });
 
         var maxHours = Math.max.apply(null, data.map(function (d) { return d.hours; }));
-
         var html = '<h3>Time vs. Money</h3>' +
             '<p class="chart-intro">The same quality show costs different things — not just dollars, but <strong>life hours</strong>.</p>' +
             '<div class="chart-grid">';
@@ -540,35 +687,19 @@
         data.forEach(function (d) {
             var hPct = Math.min((d.hours / (maxHours + 5)) * 100, 95);
             var mPct = Math.min((d.budget / 10000) * 100, 100);
-
             html += '<div class="chart-row' + (d.isCurrent ? ' current' : '') + '">' +
-                '<div class="chart-label">' + d.tier +
-                (d.isCurrent ? ' <span class="chart-you">(You)</span>' : '') +
-                '</div>' +
+                '<div class="chart-label">' + d.tier + (d.isCurrent ? ' <span class="chart-you">(You)</span>' : '') + '</div>' +
                 '<div class="chart-bars">' +
-                '<div class="chart-bar-row">' +
-                '<span class="chart-bar-icon">⏱</span>' +
-                '<div class="chart-bar-track">' +
-                '<div class="chart-bar hours-bar" style="width:' + hPct + '%"></div>' +
-                '</div>' +
-                '<span class="chart-bar-val">' + d.hours + ' hrs</span>' +
-                '</div>' +
-                '<div class="chart-bar-row">' +
-                '<span class="chart-bar-icon">💰</span>' +
-                '<div class="chart-bar-track">' +
-                '<div class="chart-bar money-bar" style="width:' + mPct + '%"></div>' +
-                '</div>' +
-                '<span class="chart-bar-val">$' + d.budget.toLocaleString() + '</span>' +
-                '</div>' +
-                '</div>' +
-                '</div>';
+                '<div class="chart-bar-row"><span class="chart-bar-icon">⏱</span><div class="chart-bar-track"><div class="chart-bar hours-bar" style="width:' + hPct + '%"></div></div><span class="chart-bar-val">' + d.hours + ' hrs</span></div>' +
+                '<div class="chart-bar-row"><span class="chart-bar-icon">💰</span><div class="chart-bar-track"><div class="chart-bar money-bar" style="width:' + mPct + '%"></div></div><span class="chart-bar-val">$' + d.budget.toLocaleString() + '</span></div>' +
+                '</div></div>';
         });
 
         html += '</div>';
         chartEl.innerHTML = html;
     }
 
-    // -------- DAY IN THE LIFE TIMELINE --------
+    // -------- TIMELINE --------
     function renderTimeline() {
         var tier = state.tier;
         var activities = [];
@@ -577,7 +708,7 @@
             activities = [
                 { time: "6:00 AM", text: "Alarm goes off. Day job in 30 minutes.", icon: "⏰" },
                 { time: "7:00 AM", text: "Clock in at work. 8 hours to go.", icon: "💼" },
-                { time: "3:30 PM", text: "Rush out. Pick up gear from the storage unit across town.", icon: "🏃" },
+                { time: "3:30 PM", text: "Rush out. Pick up gear from storage across town.", icon: "🏃" },
             ];
             if (state.selections.promo && state.selections.promo.level === "low") {
                 activities.push({ time: "4:15 PM", text: "Staple flyers to every telephone pole on the way.", icon: "📋" });
@@ -630,14 +761,11 @@
         activities.forEach(function (a, i) {
             html += '<div class="timeline-item fade-in-up delay-' + Math.min(i % 5 + 1, 5) + '">' +
                 '<div class="timeline-dot"></div>' +
-                '<div class="timeline-marker">' +
-                '<span class="timeline-icon">' + a.icon + '</span>' +
-                '</div>' +
+                '<div class="timeline-marker"><span class="timeline-icon">' + a.icon + '</span></div>' +
                 '<div class="timeline-content">' +
                 '<span class="timeline-time">' + a.time + '</span>' +
                 '<p class="timeline-text">' + a.text + '</p>' +
-                '</div>' +
-                '</div>';
+                '</div></div>';
         });
 
         html += '</div>';
@@ -660,11 +788,10 @@
             particle.style.animationDuration = (2 + Math.random() * 3) + "s";
             container.appendChild(particle);
         }
-
         setTimeout(function () { container.remove(); }, 6000);
     }
 
-    // -------- SHARE RESULTS --------
+    // -------- SHARE --------
     function shareResults(spent, remaining, avgHours) {
         var tierLabel = TIERS[state.tier].label;
         var shareText = "🎸 I put on a show as a " + tierLabel + "!\n" +
@@ -672,148 +799,105 @@
             "💸 Spent: $" + spent.toLocaleString() + "\n" +
             "⏱ Time: ~" + avgHours + " hours\n" +
             "👏 Crowd Reaction: " + state.audienceScore + "/100\n\n" +
-            "Think you could do better? Try the Show Budget Game!";
+            "Think you could do better? Try StageFinder!";
 
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(shareText).then(function () {
                 var btn = $("#btn-share");
-                btn.textContent = "Copied to clipboard! 📋";
+                btn.textContent = "Copied! 📋";
                 btn.classList.add("copied");
-                setTimeout(function () {
-                    btn.textContent = "Share Results 📤";
-                    btn.classList.remove("copied");
-                }, 2500);
+                setTimeout(function () { btn.textContent = "Share Results 📤"; btn.classList.remove("copied"); }, 2500);
             });
         } else {
-            // Fallback
-            window.prompt("Copy this text to share:", shareText);
+            window.prompt("Copy to share:", shareText);
         }
     }
 
     // -------- RESULTS --------
     function showResults() {
+        createResultsScreen();
+
         var baseCost = Object.values(state.selections).reduce(function (sum, o) { return sum + o.cost; }, 0);
         var spent = baseCost + state.eventCostImpact;
         var remaining = state.budget - spent;
 
-        var minHours = 0;
-        var maxHours = 0;
+        var minHours = 0, maxHours = 0;
         Object.values(state.selections).forEach(function (o) {
-            minHours += o.hours[0];
-            maxHours += o.hours[1];
+            minHours += o.hours[0]; maxHours += o.hours[1];
         });
         minHours += state.eventHoursImpact;
         maxHours += state.eventHoursImpact;
         var avgHours = Math.round((minHours + maxHours) / 2);
 
         var overBudget = spent > state.budget;
-        var underHalf = spent <= state.budget * 0.5;
-        var outcomeEmoji, outcomeTitle, outcomeText;
 
+        // Confirmation header
+        var badge = $("#confirmation-badge");
         if (overBudget) {
-            outcomeEmoji = "💸";
-            outcomeTitle = "Over Budget!";
-            outcomeText = "You spent <strong>$" + spent.toLocaleString() + "</strong> — that's <strong>$" + Math.abs(remaining).toLocaleString() + "</strong> over your <strong>$" + state.budget.toLocaleString() + "</strong> budget. The show might be incredible, but the bill is going to hurt. Sometimes the art costs more than you have.";
-        } else if (underHalf) {
-            outcomeEmoji = "🔥";
-            outcomeTitle = "Scrappy Legend";
-            outcomeText = "You only spent <strong>$" + spent.toLocaleString() + "</strong> out of <strong>$" + state.budget.toLocaleString() + "</strong>. That's pure hustle. You put in around <strong>" + avgHours + " hours</strong> of sweat equity, but you proved that heart beats money. The crowd doesn't care about your budget — they care about your energy.";
+            badge.textContent = "!";
+            badge.className = "confirmation-badge over-budget";
+            $("#confirmation-title").textContent = "Over Budget!";
         } else {
-            outcomeEmoji = "🎶";
-            outcomeTitle = "Show Time!";
-            outcomeText = "You spent <strong>$" + spent.toLocaleString() + "</strong> of your <strong>$" + state.budget.toLocaleString() + "</strong> budget with <strong>$" + remaining.toLocaleString() + "</strong> left over. Around <strong>" + avgHours + " hours</strong> of your time went into making this happen. A balanced approach — smart spending and solid effort. The show goes on!";
+            badge.textContent = "✓";
+            badge.className = "confirmation-badge";
+            $("#confirmation-title").textContent = "Booking Confirmed";
         }
 
-        $("#results-outcome").innerHTML =
-            '<span class="emoji-big">' + outcomeEmoji + '</span>' +
-            '<h2>' + outcomeTitle + '</h2>' +
-            '<p>' + outcomeText + '</p>';
+        var subText;
+        if (overBudget) {
+            subText = "You spent $" + spent.toLocaleString() + " — that's $" + Math.abs(remaining).toLocaleString() + " over your $" + state.budget.toLocaleString() + " budget. The show might be incredible, but the bill is going to hurt.";
+        } else if (spent <= state.budget * 0.5) {
+            subText = "You only spent $" + spent.toLocaleString() + " out of $" + state.budget.toLocaleString() + ". That's pure hustle — " + avgHours + " hours of sweat equity. The crowd doesn't care about your budget.";
+        } else {
+            subText = "You spent $" + spent.toLocaleString() + " of your $" + state.budget.toLocaleString() + " budget with $" + remaining.toLocaleString() + " left over. ~" + avgHours + " hours of your time went into this. A balanced approach.";
+        }
+        $("#confirmation-subtitle").textContent = subText;
 
+        // Stats
         $("#results-spent").textContent = "$" + spent.toLocaleString();
         $("#results-spent").className = "results-card-value " + (overBudget ? "red" : "green");
-
         $("#results-budget").textContent = "$" + state.budget.toLocaleString();
-
         $("#results-remaining").textContent = (remaining >= 0 ? "+" : "-") + "$" + Math.abs(remaining).toLocaleString();
         $("#results-remaining").className = "results-card-value " + (remaining >= 0 ? "green" : "red");
-
         $("#results-hours").textContent = "~" + avgHours + " hrs";
         $("#results-hours").className = "results-card-value yellow";
 
-        // Audience reaction
         state.audienceScore = calculateAudienceReaction();
         renderAudienceReaction();
-
-        // Consequences (only for working class over budget)
         renderConsequences(overBudget ? Math.abs(remaining) : 0);
 
-        // Breakdown table
+        // Breakdown
         var rows = "";
         CATEGORIES.forEach(function (cat) {
             var sel = state.selections[cat.id];
-            rows += "<tr>" +
-                "<td>" + cat.emoji + " " + cat.name + "</td>" +
-                "<td>" + sel.label + "</td>" +
-                "<td>$" + sel.cost.toLocaleString() + "</td>" +
-                "<td>" + sel.hours[0] + "–" + sel.hours[1] + " hrs</td>" +
-                "</tr>";
+            rows += "<tr><td>" + cat.emoji + " " + cat.name + "</td><td>" + sel.label + "</td><td>$" + sel.cost.toLocaleString() + "</td><td>" + sel.hours[0] + "–" + sel.hours[1] + " hrs</td></tr>";
         });
-
-        // Add event costs to breakdown
         if (state.eventCostImpact > 0 || state.eventHoursImpact > 0) {
-            rows += "<tr class='event-row'>" +
-                "<td>⚡ Random Events</td>" +
-                "<td>Life happened</td>" +
-                "<td>" + (state.eventCostImpact > 0 ? "+$" + state.eventCostImpact.toLocaleString() : "—") + "</td>" +
-                "<td>" + (state.eventHoursImpact > 0 ? "+" + state.eventHoursImpact + " hrs" : "—") + "</td>" +
-                "</tr>";
+            rows += "<tr class='event-row'><td>⚡ Random Events</td><td>Life happened</td><td>" + (state.eventCostImpact > 0 ? "+$" + state.eventCostImpact.toLocaleString() : "—") + "</td><td>" + (state.eventHoursImpact > 0 ? "+" + state.eventHoursImpact + " hrs" : "—") + "</td></tr>";
         }
+        rows += "<tr><td colspan=\"2\"><strong>Total</strong></td><td><strong>$" + spent.toLocaleString() + "</strong></td><td><strong>" + minHours + "–" + maxHours + " hrs</strong></td></tr>";
+        $("#results-breakdown").innerHTML = "<h3>Breakdown</h3><table class=\"breakdown-table\"><thead><tr><th>Category</th><th>Choice</th><th>Cost</th><th>Time</th></tr></thead><tbody>" + rows + "</tbody></table>";
 
-        rows += "<tr>" +
-            '<td colspan="2"><strong>Total</strong></td>' +
-            "<td><strong>$" + spent.toLocaleString() + "</strong></td>" +
-            "<td><strong>" + minHours + "–" + maxHours + " hrs</strong></td>" +
-            "</tr>";
-
-        $("#results-breakdown").innerHTML =
-            "<h3>Breakdown</h3>" +
-            '<table class="breakdown-table">' +
-            "<thead><tr><th>Category</th><th>Choice</th><th>Cost</th><th>Time</th></tr></thead>" +
-            "<tbody>" + rows + "</tbody>" +
-            "</table>";
-
-        // Time vs Money chart
         renderTimeVsMoney(spent, avgHours);
-
-        // Side-by-side comparison
         renderComparison(spent);
-
-        // Day in the Life timeline
         renderTimeline();
 
-        // Narrative section
+        // Narrative
         var tierKey = state.tier;
         var narrative = "";
         if (tierKey === "working") {
-            if (overBudget) {
-                narrative = "As a <strong>Working Class Artist</strong>, every dollar is earned through hours of labor. Going over budget means dipping into rent money, skipping meals, or borrowing from friends. The music industry doesn't hand out safety nets — you just played without one. But maybe the show was worth it?";
-            } else {
-                narrative = "As a <strong>Working Class Artist</strong>, you stretched every dollar and put in the hours. That's the reality: when you can't buy convenience, you trade time instead. The DIY path is exhausting, but it builds something money can't — authenticity and grit.";
-            }
+            narrative = overBudget
+                ? "As a <strong>Working Class Artist</strong>, every dollar is earned through hours of labor. Going over budget means dipping into rent money, skipping meals, or borrowing from friends."
+                : "As a <strong>Working Class Artist</strong>, you stretched every dollar and put in the hours. That's the reality: when you can't buy convenience, you trade time instead. The DIY path is exhausting, but it builds something money can't — authenticity and grit.";
         } else if (tierKey === "successful") {
-            if (overBudget) {
-                narrative = "Even a <strong>Successful Artist</strong> can overspend. $3,000 sounds like a lot until the costs stack up. This is the trap of the middle — enough money to dream big, not quite enough to pull it off without consequences.";
-            } else {
-                narrative = "As a <strong>Successful Artist</strong>, you had room to breathe. You could afford quality where it mattered and save where it didn't. This is the sweet spot — but staying here means making smart choices consistently.";
-            }
+            narrative = overBudget
+                ? "Even a <strong>Successful Artist</strong> can overspend. $3,000 sounds like a lot until the costs stack up. This is the trap of the middle."
+                : "As a <strong>Successful Artist</strong>, you had room to breathe. You could afford quality where it mattered and save where it didn't.";
         } else {
-            if (overBudget) {
-                narrative = "Even with a <strong>$10,000 Trust Fund</strong>, you managed to overshoot. That's impressive — and revealing. When money feels unlimited, spending becomes unconscious. But hey, the show probably looked amazing.";
-            } else {
-                narrative = "With a <strong>$10,000 Trust Fund</strong>, budget was never the challenge. The real question: did you appreciate what each dollar bought, or was it just easy? The working class artist next door put on a show too — with $500 and twice the hours.";
-            }
+            narrative = overBudget
+                ? "Even with a <strong>$10,000 Trust Fund</strong>, you managed to overshoot. That's impressive — and revealing."
+                : "With a <strong>$10,000 Trust Fund</strong>, budget was never the challenge. The real question: did you appreciate what each dollar bought?";
         }
-
         $("#results-narrative").innerHTML = narrative;
 
         showScreen("results");
@@ -822,66 +906,164 @@
 
     // -------- EVENT LISTENERS --------
 
-    // Start button
-    $("#btn-start").addEventListener("click", function () { showScreen("tier"); });
+    // Helper: update active nav link
+    function setActiveNav(id) {
+        $$(".nav-link").forEach(function (l) { l.classList.remove("active"); });
+        var el = $("#" + id);
+        if (el) el.classList.add("active");
+    }
 
-    // Tier selection
-    $$(".tier-card").forEach(function (card) {
-        card.addEventListener("click", function () {
-            var tierKey = card.dataset.tier;
+    // Info page nav links
+    $("#nav-find").addEventListener("click", function (e) {
+        e.preventDefault();
+        setActiveNav("nav-find");
+        // Remove any dynamic screens and reset to landing
+        Object.values(dynamicScreens).forEach(function (s) { s.remove(); });
+        dynamicScreens = {};
+        showScreen("landing");
+    });
+
+    $("#nav-artists").addEventListener("click", function (e) {
+        e.preventDefault();
+        setActiveNav("nav-artists");
+        showScreen("for-artists");
+    });
+
+    $("#nav-tension").addEventListener("click", function (e) {
+        e.preventDefault();
+        setActiveNav("nav-tension");
+        showScreen("tension");
+    });
+
+    // Back buttons on info pages
+    $("#btn-back-artists").addEventListener("click", function () {
+        setActiveNav("nav-find");
+        showScreen("landing");
+    });
+
+    $("#btn-back-tension").addEventListener("click", function () {
+        setActiveNav("nav-find");
+        showScreen("landing");
+    });
+
+    // Search bar filter buttons (tier selection from hero)
+    $$("[data-tier]").forEach(function (btn) {
+        if (!btn.classList.contains("filter-btn") && !btn.classList.contains("tier-tab")) return;
+        btn.addEventListener("click", function () {
+            $$(".filter-btn").forEach(function (b) { b.classList.remove("active"); });
+            btn.classList.add("active");
+            var tierKey = btn.dataset.tier;
             state.tier = tierKey;
             state.budget = TIERS[tierKey].budget;
+        });
+    });
+
+    // Search input: typewriter "San Diego" on focus
+    (function () {
+        var input = $("#search-input");
+        if (!input) return;
+        var target = "San Diego";
+        var timer = null;
+        var typed = false; // user hasn't manually typed
+
+        input.addEventListener("focus", function () {
+            if (input.value !== "" && input.value !== target) return; // user already typed something else
+            input.value = "";
+            typed = false;
+            var i = 0;
+            clearInterval(timer);
+            timer = setInterval(function () {
+                if (i < target.length) {
+                    input.value += target[i];
+                    i++;
+                } else {
+                    clearInterval(timer);
+                }
+            }, 60);
+        });
+
+        input.addEventListener("input", function () {
+            // If user starts editing during or after typewriter, stop the animation
+            if (timer) { clearInterval(timer); timer = null; }
+            typed = true;
+        });
+
+        input.addEventListener("blur", function () {
+            clearInterval(timer);
+            // Clear only if it still shows the auto-typed text and user never changed it
+            if (!typed && (input.value === target || input.value === "")) {
+                input.value = "";
+            }
+        });
+    })();
+
+    // Search CTA → go to booking
+    $("#btn-search").addEventListener("click", function () {
+        state.selections = {};
+        state.events = [];
+        state.eventCostImpact = 0;
+        state.eventHoursImpact = 0;
+
+        // Sync tier tabs with selected filter
+        $$(".tier-tab").forEach(function (t) {
+            t.classList.remove("selected");
+            if (t.dataset.tier === state.tier) t.classList.add("selected");
+        });
+
+        renderCategories();
+        updateSidebar();
+        showScreen("booking");
+    });
+
+    // "Start Planning" button in how-it-works section
+    if ($("#btn-start")) {
+        $("#btn-start").addEventListener("click", function () {
             state.selections = {};
             state.events = [];
             state.eventCostImpact = 0;
             state.eventHoursImpact = 0;
 
-            $$(".tier-card").forEach(function (c) { c.classList.remove("selected"); });
-            card.classList.add("selected");
+            $$(".tier-tab").forEach(function (t) {
+                t.classList.remove("selected");
+                if (t.dataset.tier === state.tier) t.classList.add("selected");
+            });
 
-            $("#budget-tier-label").textContent = TIERS[tierKey].label;
-            updateBudgetBar();
             renderCategories();
-            $("#btn-see-results").disabled = true;
+            updateSidebar();
+            showScreen("booking");
+        });
+    }
 
-            setTimeout(function () { showScreen("budget"); }, 300);
+    // Tier tabs in sidebar
+    $$(".tier-tab").forEach(function (tab) {
+        tab.addEventListener("click", function () {
+            var tierKey = tab.dataset.tier;
+            state.tier = tierKey;
+            state.budget = TIERS[tierKey].budget;
+            state.selections = {};
+
+            $$(".tier-tab").forEach(function (t) { t.classList.remove("selected"); });
+            tab.classList.add("selected");
+
+            renderCategories();
+            updateSidebar();
         });
     });
 
-    // Back to tier
-    $("#btn-back-tier").addEventListener("click", function () { showScreen("tier"); });
-
-    // See results → goes to random events first
-    $("#btn-see-results").addEventListener("click", function () {
-        triggerRandomEvents();
-    });
-
-    // Continue from events to results
-    $("#btn-continue-results").addEventListener("click", function () {
-        showResults();
-    });
-
-    // Share
-    $("#btn-share").addEventListener("click", function () {
-        var baseCost = Object.values(state.selections).reduce(function (sum, o) { return sum + o.cost; }, 0);
-        var spent = baseCost + state.eventCostImpact;
-        var remaining = state.budget - spent;
-        var minH = 0, maxH = 0;
-        Object.values(state.selections).forEach(function (o) { minH += o.hours[0]; maxH += o.hours[1]; });
-        var avgH = Math.round((minH + maxH) / 2) + state.eventHoursImpact;
-        shareResults(spent, remaining, avgH);
-    });
-
-    // Replay
-    $("#btn-replay").addEventListener("click", function () {
-        state.tier = null;
-        state.budget = 0;
-        state.selections = {};
-        state.events = [];
-        state.eventCostImpact = 0;
-        state.eventHoursImpact = 0;
-        state.audienceScore = 0;
-        $$(".tier-card").forEach(function (c) { c.classList.remove("selected"); });
+    // Back to landing (new search)
+    $("#btn-change-search").addEventListener("click", function () {
         showScreen("landing");
     });
+
+    // Complete Booking → show booking confirmation summary first
+    $("#btn-see-results").addEventListener("click", function () {
+        createBookingConfirmationScreen();
+        showScreen("confirmation");
+    });
+
+
+    // Share + Replay are attached dynamically inside createResultsScreen()
+
+    // Replay for landing nav (optional fallback — handled by dynamic screen)
+
 })();
