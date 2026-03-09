@@ -1,5 +1,5 @@
 /* ================================================
-   StageFinder — V3  •  Venue-Booking Platform
+   Pay to Play — V3  •  Venue-Booking Platform
    Light warm linen & amber aesthetic
    ================================================ */
 
@@ -166,6 +166,7 @@ body {
     left: 50%;
     transform: translateX(-50%);
     width: 520px;
+    max-width: calc(100vw - 2rem);
     background: rgba(255, 252, 248, 0.98);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
@@ -603,7 +604,7 @@ body {
 
 .search-cta:hover {
     transform: scale(1.04) translateY(-1px);
-    animation: none;
+    animation-play-state: paused;
     box-shadow: 0 8px 35px rgba(201, 108, 30, .55);
 }
 
@@ -996,7 +997,7 @@ body {
     height: 100%;
     border-radius: 50px;
     background: linear-gradient(90deg, var(--blue), var(--accent));
-    transition: width .5s ease, background .4s;
+    transition: width .5s ease, background .5s ease;
 }
 
 .sidebar-bar-fill.warning {
@@ -2511,6 +2512,7 @@ body {
     line-height: 1.25;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
     min-width: 0;
 }
 
@@ -2579,7 +2581,7 @@ body {
     width: 100%;
     height: 100%;
     pointer-events: none;
-    z-index: 9999;
+    z-index: 1000;
     overflow: hidden;
 }
 
@@ -2650,6 +2652,24 @@ body {
 }
 
 /* ---------- Responsive ---------- */
+@media(max-width: 768px) {
+    .option-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .results-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .info-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .how-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
 @media(max-width: 900px) {
     .booking-layout {
         grid-template-columns: 1fr;

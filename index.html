@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description"
-        content="StageFinder — Find your next stage. An interactive budget experience exploring the economics of live music.">
-    <title>StageFinder — Find Your Stage</title>
+        content="Pay to Play — An interactive budget experience exploring the economics of live music in San Diego.">
+    <title>Pay to Play — Will Wang WCWP10B</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -22,11 +22,10 @@
         <div class="nav-inner">
             <a href="#" class="nav-logo">
                 <span class="logo-icon">🎤</span>
-                <span class="logo-text">Stage<span class="logo-accent">Finder</span></span>
+                <span class="logo-text">Pay to<span class="logo-accent">Play</span></span>
             </a>
             <div class="nav-links">
-                <a href="#" class="nav-link active" id="nav-find">Find Stages</a>
-                <a href="#" class="nav-link" id="nav-artists">For Artists</a>
+                <a href="#" class="nav-link active" id="nav-find">Simulate</a>
                 <a href="#" class="nav-link" id="nav-tension">Tension</a>
             </div>
         </div>
@@ -66,7 +65,6 @@
                     <button id="btn-search" class="search-cta">Find Stages →</button>
                 </div>
 
-                <!-- Venue type pills -->
             </div>
         </div>
 
@@ -128,25 +126,29 @@
         <div class="how-section">
             <div class="how-inner">
                 <h2 class="how-title">The Reality of Putting On a Show</h2>
-                <p class="how-subtitle">It's not just about the music. It's about the money, the time, and the hustle.
-                </p>
+                <p class="how-subtitle">The cost structures of live music venues were not built for working-class
+                    musicians — but alternative models prove that they don't have to be.</p>
                 <div class="how-grid">
                     <div class="how-card">
                         <div class="how-emoji">💰</div>
                         <h3>Pick Your Budget</h3>
-                        <p>$500 working class, $3K mid-tier, or $10K trust fund — your budget shapes every decision.</p>
+                        <p>$500 working class, $3K mid-tier, or $10K trust fund — the stage will only be suitable for
+                            those who had the money to spend, rather than other artists that had something meaningful to
+                            say.</p>
                         <button class="btn btn-outline" id="btn-start">Start Planning →</button>
                     </div>
                     <div class="how-card">
                         <div class="how-emoji">🎛️</div>
                         <h3>Book Your Services</h3>
-                        <p>Venue, gear, transport, promotion, staff — each choice costs money AND time.</p>
+                        <p>Artists have to pay deposits for gear, promotion fees, and staff. All this money is gone
+                            before the show, and we can't really predict the exact audience size until people attend.
+                        </p>
                     </div>
                     <div class="how-card">
                         <div class="how-emoji">⚡</div>
                         <h3>Survive the Curveballs</h3>
-                        <p>Life happens. Amps blow fuses, drummers break down, promoters short you. Can you handle it?
-                        </p>
+                        <p>We expect 100–120 people to fill the room that has a rent over $1,600, but it was only about
+                            80 people attending, losing about $350 for us.</p>
                     </div>
                 </div>
             </div>
@@ -206,7 +208,7 @@
                             <div id="sidebar-bar" class="sidebar-bar-fill" style="width: 0%"></div>
                         </div>
                         <div class="sidebar-meter-labels">
-                            <span>0%</span>
+                            <span>Budget used</span>
                             <span id="sidebar-pct">0%</span>
                         </div>
                     </div>
@@ -233,77 +235,6 @@
         </div>
     </section>
 
-    <!-- ===== SCREEN: FOR ARTISTS ===== -->
-    <section id="screen-for-artists" class="screen">
-        <div class="info-page">
-            <div class="info-page-hero">
-                <div class="hero-bg"></div>
-                <div class="noise-overlay"></div>
-                <div class="info-page-hero-content">
-                    <span class="info-page-eyebrow">🎸 For Artists</span>
-                    <h1 class="info-page-title">Built for the <span class="accent-gradient">Working Musician</span></h1>
-                    <p class="info-page-subtitle">Tools, resources, and community for artists navigating the real
-                        economics of live performance — at every level.</p>
-                    <button class="btn btn-ghost" id="btn-back-artists">← Back to StageFinder</button>
-                </div>
-            </div>
-            <div class="info-page-body">
-                <div class="info-section">
-                    <h2 class="info-section-title">Your Journey</h2>
-                    <div class="info-cards">
-                        <div class="info-card">
-                            <div class="info-card-icon">🎸</div>
-                            <h3>Artist Profiles</h3>
-                            <p>Showcase your sound, history, and upcoming shows in one place. Venues and promoters can
-                                find you directly — no middleman required.</p>
-                            <span class="info-card-tag">Coming Soon</span>
-                        </div>
-                        <div class="info-card">
-                            <div class="info-card-icon">📅</div>
-                            <h3>Tour Planning Tools</h3>
-                            <p>Map out your next run — routing, budgeting, and venue outreach. Stop guessing, start
-                                building a real itinerary that works for your budget.</p>
-                            <span class="info-card-tag">Coming Soon</span>
-                        </div>
-                        <div class="info-card">
-                            <div class="info-card-icon">💸</div>
-                            <h3>Budget Calculator</h3>
-                            <p>Know your real costs before you commit to a show date. Venue deposit, gear rental,
-                                transport, promo — it all adds up. Stop finding out the hard way.</p>
-                            <span class="info-card-tag">Try It Now</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="info-section">
-                    <h2 class="info-section-title">Resources</h2>
-                    <div class="info-cards">
-                        <div class="info-card">
-                            <div class="info-card-icon">📖</div>
-                            <h3>The Indie Artist Guide</h3>
-                            <p>From DIY basement gigs to mid-size halls — a practical, unromantic handbook for artists
-                                who are figuring it out without a label or a trust fund.</p>
-                            <span class="info-card-tag">Coming Soon</span>
-                        </div>
-                        <div class="info-card">
-                            <div class="info-card-icon">🤝</div>
-                            <h3>Promoter Network</h3>
-                            <p>Connect with local bookers, promoters, and venue managers in the San Diego scene. Real
-                                contacts, real relationships, no gatekeeping.</p>
-                            <span class="info-card-tag">Coming Soon</span>
-                        </div>
-                        <div class="info-card">
-                            <div class="info-card-icon">📊</div>
-                            <h3>Revenue Breakdown Tool</h3>
-                            <p>Door splits, merch margins, streaming fractions — understand where every dollar goes and
-                                what you actually take home after a show.</p>
-                            <span class="info-card-tag">Coming Soon</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- ===== SCREEN: TENSION ===== -->
     <section id="screen-tension" class="screen">
         <div class="info-page">
@@ -313,33 +244,34 @@
                 <div class="info-page-hero-content">
                     <span class="info-page-eyebrow">⚡ Tension</span>
                     <h1 class="info-page-title">The Cost of <span class="accent-gradient">Playing Live</span></h1>
-                    <p class="info-page-subtitle">A WCWP 10B research project exploring what it actually takes to put on
-                        a show in San Diego — and why your zip code, your day job, and your bank account determine
-                        everything.</p>
-                    <button class="btn btn-ghost" id="btn-back-tension">← Back to StageFinder</button>
+                    <p class="info-page-subtitle">After losing money four consecutive times trying to host my own shows,
+                        I started asking a question I could not understand: why is it so hard for musicians to get on a
+                        stage without getting broke first?</p>
+                    <button class="btn btn-ghost" id="btn-back-tension">← Back to Pay to Play</button>
                 </div>
             </div>
             <div class="info-page-body">
                 <div class="info-section">
-                    <h2 class="info-section-title">The Simulation</h2>
+                    <h2 class="info-section-title">The Problem</h2>
                     <div class="info-cards">
                         <div class="info-card">
-                            <div class="info-card-icon">🔍</div>
-                            <h3>Search &amp; Discover</h3>
-                            <p>Filter real San Diego venues by capacity, cost, and vibe. Every search reveals a
-                                different reality depending on your budget tier.</p>
+                            <div class="info-card-icon">💸</div>
+                            <h3>Money Gone Before the Show</h3>
+                            <p>Artists have to pay deposits for gear, promotion fees, and staff. All this money is gone
+                                before the show, and we can't really predict the exact audience size until people attend
+                                the show.</p>
                         </div>
                         <div class="info-card">
-                            <div class="info-card-icon">⚡</div>
-                            <h3>Simulate Your Show</h3>
-                            <p>Choose your services, watch your budget drain, survive the curveballs. This is what show
-                                day actually looks like — before and after things go wrong.</p>
+                            <div class="info-card-icon">📉</div>
+                            <h3>80 People, $350 Lost</h3>
+                            <p>We expect 100–120 people to fill the room that has a rent over $1,600, but it was only
+                                about 80 people attending, losing about $350 for us.</p>
                         </div>
                         <div class="info-card">
-                            <div class="info-card-icon">📊</div>
-                            <h3>Compare Tiers</h3>
-                            <p>See the same show through three different financial realities. The music is the same. The
-                                experience — and the stakes — couldn't be more different.</p>
+                            <div class="info-card-icon">🚫</div>
+                            <h3>Genuinely Prohibitive</h3>
+                            <p>For a local or emerging artist without a large fan base, these conditions are not just
+                                inconvenient; they are genuinely prohibitive.</p>
                         </div>
                     </div>
                 </div>
@@ -347,22 +279,25 @@
                     <h2 class="info-section-title">The Research</h2>
                     <div class="info-cards">
                         <div class="info-card">
-                            <div class="info-card-icon">🎓</div>
-                            <h3>WCWP 10B Research</h3>
-                            <p>An interactive study on the economic barriers facing working class musicians in San Diego
-                                — who gets to perform, who doesn't, and why the gap keeps growing.</p>
+                            <div class="info-card-icon">🍺</div>
+                            <h3>Belly Up Tavern</h3>
+                            <p>What stayed with me long after our conversation was the fundamental shift in who absorbs
+                                the financial risk of an event that didn't sell well. The venue's overhead did not
+                                change
+                                because Spotify, Apple Music, or Deezer exist.</p>
                         </div>
                         <div class="info-card">
-                            <div class="info-card-icon">🗺️</div>
-                            <h3>San Diego Scene</h3>
-                            <p>The local music ecosystem — from the Che Cafe to the Conrad — and what the survival of
-                                each venue says about access, community, and money in live music.</p>
+                            <div class="info-card-icon">✊</div>
+                            <h3>Che Cafe, UCSD</h3>
+                            <p>Maddie described the Che not just as a music venue but as a proof of the concept of
+                                community-driven space, not a profit-driven business.</p>
                         </div>
                         <div class="info-card">
-                            <div class="info-card-icon">🏚️</div>
-                            <h3>DIY or Die</h3>
-                            <p>When you can't afford a booker, a manager, or a sound engineer, you become all three.
-                                What does that labor actually cost, and who's paying for it?</p>
+                            <div class="info-card-icon">🎭</div>
+                            <h3>The Conrad</h3>
+                            <p>The Conrad had actually doubled both audience and revenue, because the people finding
+                                their artists online were genuine fans who had discovered a specific performer, followed
+                                their work, and traveled specifically to see them live.</p>
                         </div>
                     </div>
                 </div>

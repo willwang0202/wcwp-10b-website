@@ -1,5 +1,5 @@
 /* ================================================
-   StageFinder — V3  •  Venue-Booking Platform
+   Pay to Play — V3  •  Venue-Booking Platform
    Game logic adapted for new layout
    ================================================ */
 
@@ -215,7 +215,7 @@
     var dynamicScreens = {};
 
     // -------- NAVIGATION --------
-    var staticInfoScreens = ["for-artists", "tension"];
+    var staticInfoScreens = ["tension"];
 
     function showScreen(name) {
         // Hide all static screens
@@ -396,6 +396,7 @@
             '</div>' +
             '<p class="conf-cta-hint">&#128262; It\'s show night. Expect the unexpected.</p>' +
             '<button id="btn-goto-events" class="btn btn-cta-full">Head to Show Night &#8594;</button>' +
+            '<button id="btn-back-to-booking" class="btn btn-ghost" style="margin-top:.6rem">&#8592; Back to Booking</button>' +
             '</div>';
 
         document.body.insertBefore(sec, document.querySelector("script"));
@@ -403,6 +404,9 @@
 
         sec.querySelector("#btn-goto-events").addEventListener("click", function () {
             triggerRandomEvents();
+        });
+        sec.querySelector("#btn-back-to-booking").addEventListener("click", function () {
+            showScreen("booking");
         });
     }
 
@@ -423,6 +427,7 @@
             '<div id="events-list" class="events-list"></div>' +
             '<div id="events-impact" class="events-impact"></div>' +
             '<button id="btn-continue-results" class="btn btn-cta-full">See How the Show Went &#8594;</button>' +
+            '<button id="btn-start-over" class="btn btn-ghost" style="margin-top:.6rem">&#8592; Start Over</button>' +
             '</div>';
 
         document.body.insertBefore(sec, document.querySelector("script"));
@@ -430,6 +435,17 @@
 
         sec.querySelector("#btn-continue-results").addEventListener("click", function () {
             showResults();
+        });
+        sec.querySelector("#btn-start-over").addEventListener("click", function () {
+            state.selections = {};
+            state.events = [];
+            state.eventCostImpact = 0;
+            state.eventHoursImpact = 0;
+            state.audienceScore = 0;
+            Object.values(dynamicScreens).forEach(function (s) { s.remove(); });
+            dynamicScreens = {};
+            setActiveNav("nav-find");
+            showScreen("landing");
         });
     }
 
@@ -849,6 +865,18 @@
     }
 
     // -------- SHARE --------
+    function handleFallback(text) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(function () {
+                alert("Results copied to clipboard!");
+            }).catch(function () {
+                prompt("Copy your results:", text);
+            });
+        } else {
+            prompt("Copy your results:", text);
+        }
+    }
+
     function shareResults(spent, remaining, avgHours) {
         // 1. Log to console to see if the function is even firing
         console.log("Share function triggered");
@@ -859,8 +887,8 @@
         var siteUrl = "https://willwang0202.github.io/wcwp-10b-website/";
     
         var shareData = {
-            title: "StageFinder — I just put on a show!",
-            text: "🎸 I booked a show as a " + tierLabel + " on StageFinder!\n" +
+            title: "Pay to Play — I just put on a show!",
+            text: "🎸 I booked a show as a " + tierLabel + " on Pay to Play!\n" +
                   "💰 Budget: $" + spent.toLocaleString() + "\n" +
                   audienceEmoji + " Reaction: " + state.audienceScore + "/100",
             url: siteUrl
@@ -977,6 +1005,15 @@
         if (el) el.classList.add("active");
     }
 
+    // Logo click — always return to landing
+    $(".nav-logo").addEventListener("click", function (e) {
+        e.preventDefault();
+        setActiveNav("nav-find");
+        Object.values(dynamicScreens).forEach(function (s) { s.remove(); });
+        dynamicScreens = {};
+        showScreen("landing");
+    });
+
     // Info page nav links
     $("#nav-find").addEventListener("click", function (e) {
         e.preventDefault();
@@ -987,12 +1024,6 @@
         showScreen("landing");
     });
 
-    $("#nav-artists").addEventListener("click", function (e) {
-        e.preventDefault();
-        setActiveNav("nav-artists");
-        showScreen("for-artists");
-    });
-
     $("#nav-tension").addEventListener("click", function (e) {
         e.preventDefault();
         setActiveNav("nav-tension");
@@ -1000,11 +1031,6 @@
     });
 
     // Back buttons on info pages
-    $("#btn-back-artists").addEventListener("click", function () {
-        setActiveNav("nav-find");
-        showScreen("landing");
-    });
-
     $("#btn-back-tension").addEventListener("click", function () {
         setActiveNav("nav-find");
         showScreen("landing");
@@ -1067,6 +1093,7 @@
         state.events = [];
         state.eventCostImpact = 0;
         state.eventHoursImpact = 0;
+        state.audienceScore = 0;
 
         // Sync tier tabs with selected filter
         $$(".tier-tab").forEach(function (t) {
@@ -1086,6 +1113,7 @@
             state.events = [];
             state.eventCostImpact = 0;
             state.eventHoursImpact = 0;
+            state.audienceScore = 0;
 
             $$(".tier-tab").forEach(function (t) {
                 t.classList.remove("selected");
@@ -1105,6 +1133,12 @@
             state.tier = tierKey;
             state.budget = TIERS[tierKey].budget;
             state.selections = {};
+            state.events = [];
+            state.eventCostImpact = 0;
+            state.eventHoursImpact = 0;
+            state.audienceScore = 0;
+            Object.values(dynamicScreens).forEach(function (s) { s.remove(); });
+            dynamicScreens = {};
 
             $$(".tier-tab").forEach(function (t) { t.classList.remove("selected"); });
             tab.classList.add("selected");
